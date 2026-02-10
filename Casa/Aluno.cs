@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.Text;
 
-class Aluno
+class Aluno : Pessoa
 {
-    private string Nome { get; set; } = string.Empty;
-    private int Idade { get; set; }
     private string Turma { get; set; } = string.Empty;
     private List<double> Notas { get; set; } = new List<double>();
 
-    public string GetNome()
+    public Aluno(string nome, int idade, long cpf, string turma,
+        List<double> notas) 
+        : base(nome, idade, cpf)
     {
-        return Nome;
+        Turma = turma;
+        Notas = notas;
     }
-    public int GetIdade()
-    {
-        return Idade;
-    }
+
     public string GetTurma()
     {
         return Turma;

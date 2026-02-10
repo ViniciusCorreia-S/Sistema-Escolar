@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 
-class Professor
+class Professor : Pessoa
 {
-    private string Nome { get; set; } = string.Empty;
-    private int Idade { get; set; }
     private string Disciplina { get; set; } = string.Empty;
     private List<decimal> Salarios { get; set; } = new List<decimal>();
     private List<string> Turmas { get; set; } = new List<string>();
 
-    public string GetNome()
+    public Professor(string nome, int idade, long cpf, string disciplina,
+        List<decimal> salarios, List<string> turmas) 
+        : base(nome, idade, cpf)
     {
-        return Nome;
+        Disciplina = disciplina;
+        Salarios = salarios;
+        Turmas = turmas;
     }
-    public int GetIdade()
-    {
-        return Idade;
-    }
+
     public string GetDisciplina()
     {
         return Disciplina;
