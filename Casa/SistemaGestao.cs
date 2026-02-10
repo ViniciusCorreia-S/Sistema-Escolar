@@ -193,7 +193,7 @@ class Program
 
 		Aluno aluno = alunos[indice];
 		Console.WriteLine($"\nNome: {aluno.GetNome()}");
-		Console.WriteLine($"CPF: {aluno.GetIdade()}");
+		Console.WriteLine($"CPF: {aluno.GetCPF()}");
 		Console.WriteLine($"Idade: {aluno.GetIdade()} anos");
 		Console.WriteLine($"Turma: {aluno.GetTurma()}");
 		Console.WriteLine($"Média: {aluno.CalcularMedia():F2}");
@@ -315,11 +315,12 @@ class Program
 		Console.WriteLine();
 		for (int i = 0; i < professores.Count; i++)
 		{
-			var nome = string.IsNullOrEmpty(professores[i].GetNome()) ? "(sem nome)" : professores[i].GetNome();
-			var disciplina = string.IsNullOrEmpty(professores[i].GetDisciplina()) ? "(sem disciplina)" : professores[i].GetDisciplina();
+			var nome = string.IsNullOrEmpty(professores[i].GetNome());
+			var cpf = professores[i].GetCPF();
+            var disciplina = string.IsNullOrEmpty(professores[i].GetDisciplina()) ? "(sem disciplina)" : professores[i].GetDisciplina();
 			var salario = professores[i].GetSalarios().Count == 0 ? 0 : professores[i].GetSalarios()[^1];
 
-			Console.WriteLine($"ID: {i + 1}. {nome} - Disciplina: {disciplina} - Salário: {salario}");
+			Console.WriteLine($"ID: {i + 1}. {nome}- CPF: {cpf} - Disciplina: {disciplina} - Salário: {salario}");
 		}
 	}
 
