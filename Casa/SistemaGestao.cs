@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Spectre.Console;
 
 class Program
 {
@@ -11,7 +12,8 @@ class Program
 	{
 		bool continuar = true;
 
-		Console.WriteLine("╔═════════════════════════════════════╗");
+		AnsiConsole.MarkupLine("[bold blue]Bem-vindo ao Sistema de Gestão Escolar![/]");
+        Console.WriteLine("╔═════════════════════════════════════╗");
 		Console.WriteLine("║      SISTEMA DE GESTÃO ESCOLAR      ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 

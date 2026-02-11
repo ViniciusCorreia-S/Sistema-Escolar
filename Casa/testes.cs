@@ -4,7 +4,6 @@
 
 //class Program
 //{
-//    static List<Pessoa> pessoas = new List<Pessoa>();
 //    static List<Aluno> alunos = new List<Aluno>();
 //    static List<Professor> professores = new List<Professor>();
 
@@ -19,7 +18,13 @@
 //        while (continuar)
 //        {
 //            ExibirMenuPrincipal();
-//            Console.WriteLine("\nDigite o número de uma opção: ");
+
+//            //AnsiConsole.MarkupLine($" \nDigite o [green]número[/] de uma opção: ");
+//            //Console.WriteLine("\nDigite o número de uma opção: ");
+//            var size = AnsiConsole.Prompt(
+//                new SelectionPrompt<string>()
+//                .Title("\nDigite o [green]número[/] de uma opção: ")
+//                .AddChoices("Small", "Medium", "Large", "Extra Large"));
 //            string? opcao = Console.ReadLine();
 
 //            switch (opcao)
@@ -71,7 +76,7 @@
 //        Console.WriteLine("│ 1 - Gestão de Alunos                   │");
 //        Console.WriteLine("│ 2 - Gestão de Professores              │");
 //        Console.WriteLine("│ 3 - Estatísticas Gerais                │");
-//        Console.WriteLine("│ 0 - Sair                               │");
+//        Console.WriteLine("│ 0 - Sair                 323424324              │");
 //        Console.WriteLine("└────────────────────────────────────────┘");
 //    }
 
@@ -83,7 +88,7 @@
 //        {
 //            Console.Clear();
 //            ExibirMenuAlunos();
-//            Console.WriteLine("\nDigite o número de uma opção: ");
+//            AnsiConsole.MarkupLine($" \nDigite o [green]número[/] de uma opção: ");
 //            string? opcao = Console.ReadLine();
 
 //            switch (opcao)
@@ -141,18 +146,19 @@
 //        Console.WriteLine("║         CADASTRO DE ALUNO           ║");
 //        Console.WriteLine("╚═════════════════════════════════════╝");
 
-//        var nome = ReadNonEmptyString("\nDigite o nome do aluno: ");
-//        long cpf = ReadLongInRange("Digite o CPF do aluno (apenas números): ", 10000000000, 99999999999);
-//        int idade = ReadIntInRange("Digite a idade do aluno: ", 0, 120);
-//        var turma = ReadNonEmptyString("Digite a turma do aluno: ");
+//        var nome = ReadNonEmptyString(AnsiConsole.MarkupLine($" \nDigite o [blue]nome[/] do aluno: "));
+//        //var nome = ReadNonEmptyString("\nDigite o nome do aluno: ");
+//        long cpf = ReadLongInRange(AnsiConsole.MarkupLine($"Digite o[blue]CPF[/] do aluno: "), 10000000000, 99999999999);
+//        //long cpf = ReadLongInRange("Digite o CPF do aluno (apenas números): ", 10000000000, 99999999999);
+//        int idade = ReadIntInRange(AnsiConsole.MarkupLine("Digite a [blue]idade[/] do aluno: "), 0, 120);
+//        var turma = ReadNonEmptyString(AnsiConsole.MarkupLine("Digite a [blue]turma[/] do aluno: "));
 
-//        Pessoa novaPessoa = new Pessoa();
-//        pessoas.Add(novaPessoa);
+//        Aluno novoAluno = new(nome, idade, cpf, turma, new List<double>());
 
-//        Aluno novoAluno = new Aluno();
 //        alunos.Add(novoAluno);
+//        int idAluno = alunos.Count;
 
-//        DestacarMensagem($"\nAluno {novaPessoa.GetNome()} cadastrado com sucesso!", ConsoleColor.Green);
+//        DestacarMensagem($"\nAluno {novoAluno.GetNome()} cadastrado com sucesso! Seu número de ID é: {idAluno}", ConsoleColor.Green);
 //    }
 
 //    static void ListarAlunos()
@@ -164,27 +170,16 @@
 
 //        if (alunos.Count == 0)
 //        {
-//            Console.WriteLine("\nNenhum aluno cadastrado.");
+//            DestacarMensagem("\nNenhum aluno cadastrado.", ConsoleColor.Yellow);
 //            return;
 //        }
 
 //        Console.WriteLine();
 //        for (int i = 0; i < alunos.Count; i++)
 //        {
-//            var nome = string.IsNullOrEmpty(pessoas[i].GetNome()) ? "(sem nome)" : pessoas[i].GetNome();
+//            var nome = string.IsNullOrEmpty(alunos[i].GetNome()) ? "(sem nome)" : alunos[i].GetNome();
 //            var turma = string.IsNullOrEmpty(alunos[i].GetTurma()) ? "(sem turma)" : alunos[i].GetTurma();
-//            Console.WriteLine($"{i + 1}. {nome} - Turma: {turma} - Média: {alunos[i].CalcularMedia():F2}");
-//        }
-//    }
-
-//    static void PesquisarPorCPF(List<Pessoa> pessoas)
-//    {
-//        long cpfProcurado = ReadLongInRange("Digite o CPF para pesquisar: ", 10000000000, 99999999999));
-
-//        Pessoa resultado = pessoas.Find(p => p.GetCPF() == cpfProcurado);
-
-//        if (resultado != null)
-//        {
+//            Console.WriteLine($"ID: {i + 1}. {nome} - Turma: {turma} - Média: {alunos[i].CalcularMedia():F2}");
 //        }
 //    }
 
@@ -202,11 +197,11 @@
 //        }
 
 //        ListarAlunos();
-//        long indice = ReadIndexChoice("\nDigite o CPF do aluno: ", pessoas.Count);
+//        int indice = ReadIndexChoice(AnsiConsole.MarkupLine("\nDigite o [blue]número de ID[/] do aluno: "), alunos.Count);
 
-//        Pessoa pessoa = pessoas[indice];
-//        Console.WriteLine($"\nNome: {pessoas.GetNome()}");
-//        Console.WriteLine($"CPF: {pessoas.get}");
+//        Aluno aluno = alunos[indice];
+//        Console.WriteLine($"\nNome: {aluno.GetNome()}");
+//        Console.WriteLine($"CPF: {aluno.GetCPF()}");
 //        Console.WriteLine($"Idade: {aluno.GetIdade()} anos");
 //        Console.WriteLine($"Turma: {aluno.GetTurma()}");
 //        Console.WriteLine($"Média: {aluno.CalcularMedia():F2}");
@@ -227,9 +222,9 @@
 //        }
 
 //        ListarAlunos();
-//        int indice = ReadIndexChoice("\nDigite o número do aluno: ", alunos.Count);
+//        int indice = ReadIndexChoice("\nDigite o [blue]número de ID[/] do aluno: ", alunos.Count);
 
-//        double nota = ReadDoubleInRange("\nDigite a nota a ser adicionada (0 a 10): ", 0, 10);
+//        double nota = ReadDoubleInRange(AnsiConsole.MarkupLine("\nDigite a [blue]nota[/] a ser adicionada (0 a 10): "), 0, 10);
 //        alunos[indice].GetNotas().Add(nota);
 //        DestacarMensagem($"\nNota adicionada com sucesso para {alunos[indice].GetNome()}!", ConsoleColor.Green);
 //    }
@@ -242,7 +237,7 @@
 //        {
 //            Console.Clear();
 //            ExibirMenuProfessores();
-//            Console.WriteLine("\nDigite o número de uma opção: ");
+//            AnsiConsole.MarkupLine($" \nDigite o [green]número[/] de uma opção: ");
 //            string? opcao = Console.ReadLine();
 
 //            switch (opcao)
@@ -300,14 +295,17 @@
 //        Console.WriteLine("║       CADASTRO DE PROFESSOR         ║");
 //        Console.WriteLine("╚═════════════════════════════════════╝");
 
-//        var nome = ReadNonEmptyString("\nDigite o nome do professor: ");
-//        int idade = ReadIntInRange("Digite a idade do professor: ", 18, 120);
-//        string disciplina = ReadNonEmptyString("Qual a disciplina desse professor? ");
+//        var nome = ReadNonEmptyString(AnsiConsole.MarkupLine("\nDigite o [blue]nome[/] do professor: "));
+//        int idade = ReadIntInRange(AnsiConsole.MarkupLine("Digite a [blue]idade[/] do professor: "), 18, 120);
+//        long cpf = ReadLongInRange(AnsiConsole.MarkupLine("Digite o [blue]CPF[/] do professor (apenas números): "), 10000000000, 99999999999);
+//        string disciplina = ReadNonEmptyString(AnsiConsole.MarkupLine("Qual a [blue]disciplina[/] desse professor? "));
 
-//        Professor novoProfessor = new Professor();
+//        Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
 
 //        professores.Add(novoProfessor);
-//        DestacarMensagem($"\nProfessor {novoProfessor.GetNome} cadastrado com sucesso!", ConsoleColor.Green);
+//        int idProfessor = professores.Count;
+
+//        DestacarMensagem($"\nProfessor {novoProfessor.GetNome()} cadastrado com sucesso! Seu número de ID é: {idProfessor}", ConsoleColor.Green);
 //    }
 
 //    static void ListarProfessores()
@@ -319,18 +317,18 @@
 
 //        if (professores.Count == 0)
 //        {
-//            Console.WriteLine("\nNenhum professor cadastrado.");
-//            return;
+//            DestacarMensagem("\nNenhum professor cadastrado.", ConsoleColor.Yellow);
 //        }
 
 //        Console.WriteLine();
 //        for (int i = 0; i < professores.Count; i++)
 //        {
-//            var nome = string.IsNullOrEmpty(professores[i].GetNome()) ? "(sem nome)" : professores[i].GetNome();
+//            var nome = string.IsNullOrEmpty(professores[i].GetNome());
+//            var cpf = professores[i].GetCPF();
 //            var disciplina = string.IsNullOrEmpty(professores[i].GetDisciplina()) ? "(sem disciplina)" : professores[i].GetDisciplina();
 //            var salario = professores[i].GetSalarios().Count == 0 ? 0 : professores[i].GetSalarios()[^1];
 
-//            Console.WriteLine($"{i + 1}. {nome} - Disciplina: {disciplina} - Salário: {salario}");
+//            Console.WriteLine($"ID: {i + 1}. {nome}- CPF: {cpf} - Disciplina: {disciplina} - Salário: {salario}");
 //        }
 //    }
 
@@ -344,21 +342,22 @@
 
 //    static void SalarioProfessor()
 //    {
+//        Console.Clear();
 //        Console.WriteLine("╔═════════════════════════════════════╗");
 //        Console.WriteLine("║          ATUALIZAR SÁLARIO          ║");
 //        Console.WriteLine("╚═════════════════════════════════════╝");
 
 //        if (professores.Count == 0)
 //        {
-//            Console.WriteLine("\nNenhum professor cadastrado.");
+//            DestacarMensagem("\nNenhum professor cadastrado.", ConsoleColor.Yellow);
 //            return;
 //        }
 
 //        ListarProfessores();
 
-//        int indice = ReadIndexChoice("\nDigite o número do professor: ", professores.Count);
+//        int indice = ReadIndexChoice(AnsiConsole.MarkupLine("\nDigite o [blue]número de ID[/] do professor: "), professores.Count);
 
-//        decimal salario = ReadDecimalInRange("\nDigite o sálario a ser adicionado : ", 0, 1_000_000);
+//        decimal salario = ReadDecimalInRange(AnsiConsole.MarkupLine("\nDigite o [blue]sálario[/] a ser adicionado : "), 0, 1_000_000);
 //        professores[indice].GetSalarios().Add(salario);
 //    }
 
@@ -457,7 +456,7 @@
 //                return value;
 //            //if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
 //            //	return value;
-//            DestacarMensagem($"Entrada inválida. Digite um número maior que {min}.", ConsoleColor.Red);
+//            DestacarMensagem($"Entrada inválida. Siga este modelo: 000.000.000-00.", ConsoleColor.Red);
 //        }
 //    }
 
@@ -476,25 +475,15 @@
 //        }
 //    }
 
-//    static long ReadIndexChoice(string prompt, long count)
+//    static int ReadIndexChoice(string prompt, int count)
 //    {
 //        while (true)
 //        {
 //            Console.Write(prompt);
 //            var line = Console.ReadLine();
-//            if (long.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out long value) && value >= 1 && value <= count)
+//            if (int.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value) && value >= 1 && value <= count)
 //                return value - 1;
-//            DestacarMensagem("Escolha inválida...", ConsoleColor.Red);
+//            DestacarMensagem($"Escolha inválida. Digite um número entre 1 e {count}.", ConsoleColor.Red);
 //        }
 //    }
-//    //static int ReadIndexChoice(string prompt, int count)
-//    //{
-//    //	while (true)
-//    //	{
-//    //		Console.Write(prompt);
-//    //		var line = Console.ReadLine();
-//    //		if (int.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value) && value >= 1 && value <= count)
-//    //			return value - 1;
-//    //		DestacarMensagem($"Escolha inválida. Digite um número entre 1 e {count}.", ConsoleColor.Red);
-//    //	}
 //}
