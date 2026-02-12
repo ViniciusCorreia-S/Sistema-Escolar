@@ -10,17 +10,17 @@ class Program
 
 	static void Main()
 	{
-		bool continuar = true;
 
 		AnsiConsole.MarkupLine("[bold blue]Bem-vindo ao Sistema de Gestão Escolar![/]");
-        Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║      SISTEMA DE GESTÃO ESCOLAR      ║");
+		bool continuar = true;
+		Console.WriteLine("╔═════════════════════════════════════╗");
+        AnsiConsole.MarkupLine("║      [bold green]SISTEMA DE GESTÃO ESCOLAR[/]      ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		while (continuar)
 		{
 			ExibirMenuPrincipal();
-			Console.WriteLine("\nDigite o número de uma opção: ");
+			AnsiConsole.MarkupLine("\nDigite o [green]número[/] de uma opção: ");
 			string? opcao = Console.ReadLine();
 
 			switch (opcao)
@@ -40,7 +40,7 @@ class Program
 				case "0":
 					continuar = false;
 					Console.WriteLine("\nEncerrando o sistema...");
-					Console.WriteLine("Obrigado por usar o Sistema de Gestão Escolar!");
+					AnsiConsole.MarkupLine("[white blue]Obrigado por usar o Sistema de Gestão Escolar![/]");
 					break;
 
 				default:
@@ -67,7 +67,7 @@ class Program
 	static void ExibirMenuPrincipal()
 	{
 		Console.WriteLine("\n┌────────────────────────────────────────┐");
-		Console.WriteLine("│          MENU PRINCIPAL                │");
+        AnsiConsole.MarkupLine("│          [bold green]MENU PRINCIPAL[/]                │");
 		Console.WriteLine("├────────────────────────────────────────┤");
 		Console.WriteLine("│ 1 - Gestão de Alunos                   │");
 		Console.WriteLine("│ 2 - Gestão de Professores              │");
@@ -84,7 +84,7 @@ class Program
 		{
 			Console.Clear();
 			ExibirMenuAlunos();
-			Console.WriteLine("\nDigite o número de uma opção: ");
+            AnsiConsole.MarkupLine("\nDigite o [green]número[/] de uma opção: ");
 			string? opcao = Console.ReadLine();
 
 			switch (opcao)
@@ -125,7 +125,7 @@ class Program
 	static void ExibirMenuAlunos()
 	{
 		Console.WriteLine("\n┌────────────────────────────────────────┐");
-		Console.WriteLine("│        GESTÃO DE ALUNOS                │");
+        AnsiConsole.MarkupLine("│        [bold green]GESTÃO DE ALUNOS[/]                │");
 		Console.WriteLine("├────────────────────────────────────────┤");
 		Console.WriteLine("│ 1 - Cadastrar Aluno                    │");
 		Console.WriteLine("│ 2 - Listar Alunos                      │");
@@ -139,13 +139,13 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║         CADASTRO DE ALUNO           ║");
+        AnsiConsole.MarkupLine("║         [bold blue]CADASTRO DE ALUNO[/]           ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
-		var nome = ReadNonEmptyString("\nDigite o nome do aluno: ");
-		long cpf = ReadLongInRange("Digite o CPF do aluno (apenas números): ", 10000000000, 99999999999);
-		int idade = ReadIntInRange("Digite a idade do aluno: ", 0, 120);
-		var turma = ReadNonEmptyString("Digite a turma do aluno: ");
+		var nome = ReadNonEmptyString("\nDigite o [blue]nome[/] do aluno: ");
+		long cpf = ReadLongInRange("Digite o [blue]CPF[/] do aluno (apenas números): ", 10000000000, 99999999999);
+		int idade = ReadIntInRange("Digite a [blue]idade[/] do aluno: ", 0, 120);
+		var turma = ReadNonEmptyString("Digite a [blue]turma[/] do aluno: ");
 
 		Aluno novoAluno = new(nome, idade, cpf, turma, new List<double>());
 
@@ -159,7 +159,7 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║           LISTA DE ALUNOS           ║");
+        AnsiConsole.MarkupLine("║           [bold blue]LISTA DE ALUNOS[/]           ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (alunos.Count == 0)
@@ -173,7 +173,7 @@ class Program
 		{
 			var nome = string.IsNullOrEmpty(alunos[i].GetNome()) ? "(sem nome)" : alunos[i].GetNome();
 			var turma = string.IsNullOrEmpty(alunos[i].GetTurma()) ? "(sem turma)" : alunos[i].GetTurma();
-			Console.WriteLine($"ID: {i + 1}. {nome} - Turma: {turma} - Média: {alunos[i].CalcularMedia():F2}");
+			AnsiConsole.MarkupLine($"[blue]ID[/]: {i + 1}. {nome} - [blue]Turma[/]: {turma} - [blue]Média[/]: {alunos[i].CalcularMedia():F2}");
 		}
 	}
 
@@ -181,7 +181,7 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║          DETALHES DO ALUNO          ║");
+        AnsiConsole.MarkupLine("║          [bold blue]DETALHES DO ALUNO[/]          ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (alunos.Count == 0)
@@ -191,7 +191,7 @@ class Program
 		}
 
 		ListarAlunos();
-		int indice = ReadIndexChoice("\nDigite o número de ID do aluno: ", alunos.Count);
+		int indice = ReadIndexChoice("\nDigite o [blue]número de ID[/] do aluno: ", alunos.Count);
 
 		Aluno aluno = alunos[indice];
 		Console.WriteLine($"\nNome: {aluno.GetNome()}");
@@ -206,7 +206,7 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║           ADICIONAR NOTA            ║");
+        AnsiConsole.MarkupLine("║           [bold blue]ADICIONAR NOTA[/]            ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (alunos.Count == 0)
@@ -216,9 +216,9 @@ class Program
 		}
 
 		ListarAlunos();
-		int indice = ReadIndexChoice("\nDigite o número do aluno: ", alunos.Count);
+		int indice = ReadIndexChoice("\nDigite o [blue]número de ID[/] do aluno: ", alunos.Count);
 
-		double nota = ReadDoubleInRange("\nDigite a nota a ser adicionada (0 a 10): ", 0, 10);
+		double nota = ReadDoubleInRange("\nDigite a [blue]nota[/] a ser adicionada (0 a 10): ", 0, 10);
 		alunos[indice].GetNotas().Add(nota);
 		DestacarMensagem($"\nNota adicionada com sucesso para {alunos[indice].GetNome()}!", ConsoleColor.Green);
 	}
@@ -231,7 +231,7 @@ class Program
 		{
 			Console.Clear();
 			ExibirMenuProfessores();
-			Console.WriteLine("\nDigite o número de uma opção: ");
+            AnsiConsole.MarkupLine("\nDigite o [green]número[/] de uma opção: ");
 			string? opcao = Console.ReadLine();
 
 			switch (opcao)
@@ -272,7 +272,7 @@ class Program
 	static void ExibirMenuProfessores()
 	{
 		Console.WriteLine("\n┌────────────────────────────────────────┐");
-		Console.WriteLine("│         GESTÃO DE PROFESSORES          │");
+        AnsiConsole.MarkupLine("│         [bold green]GESTÃO DE PROFESSORES[/]          │");
 		Console.WriteLine("├────────────────────────────────────────┤");
 		Console.WriteLine("│ 1 - Cadastrar Professor                │");
 		Console.WriteLine("│ 2 - Listar Professores                 │");
@@ -286,13 +286,13 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║       CADASTRO DE PROFESSOR         ║");
+        AnsiConsole.MarkupLine("║       [bold blue]CADASTRO DE PROFESSOR[/]         ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
-		var nome = ReadNonEmptyString("\nDigite o nome do professor: ");
-		int idade = ReadIntInRange("Digite a idade do professor: ", 18, 120);
-        long cpf = ReadLongInRange("Digite o CPF do professor (apenas números): ", 10000000000, 99999999999);
-        string disciplina = ReadNonEmptyString("Qual a disciplina desse professor? ");
+		var nome = ReadNonEmptyString("\nDigite o [blue]nome[/] do professor: ");
+		int idade = ReadIntInRange("Digite a [blue]idade[/] do professor: ", 18, 120);
+        long cpf = ReadLongInRange("Digite o [blue]CPF[/] do professor (apenas números): ", 10000000000, 99999999999);
+        string disciplina = ReadNonEmptyString("Qual a [blue]disciplina[/] desse professor? ");
 
 		Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
 
@@ -306,23 +306,24 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║        LISTA DE PROFESSORES         ║");
+        AnsiConsole.MarkupLine("║        [bold blue]LISTA DE PROFESSORES[/]         ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (professores.Count == 0)
 		{
             DestacarMensagem("\nNenhum professor cadastrado.", ConsoleColor.Yellow);
+			return;
 		}
 
 		Console.WriteLine();
 		for (int i = 0; i < professores.Count; i++)
-		{
-			var nome = string.IsNullOrEmpty(professores[i].GetNome());
-			var cpf = professores[i].GetCPF();
-            var disciplina = string.IsNullOrEmpty(professores[i].GetDisciplina()) ? "(sem disciplina)" : professores[i].GetDisciplina();
+        {
+			var nome = string.IsNullOrEmpty(professores[i].GetNome()) ? "[red](sem nome)[/]" : professores[i].GetNome();
+			var cpf = (professores[i].GetCPF());
+            var disciplina = string.IsNullOrEmpty(professores[i].GetDisciplina()) ? "[red](sem disciplina)[/]" : professores[i].GetDisciplina();
 			var salario = professores[i].GetSalarios().Count == 0 ? 0 : professores[i].GetSalarios()[^1];
 
-			Console.WriteLine($"ID: {i + 1}. {nome}- CPF: {cpf} - Disciplina: {disciplina} - Salário: {salario}");
+            AnsiConsole.MarkupLine($"[blue]ID[/]: {i + 1}. {nome}- [blue]CPF[/]: {cpf} - [blue]Disciplina[/]: {disciplina} - [blue]Salário[/]: {salario}");
 		}
 	}
 
@@ -338,7 +339,7 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║          ATUALIZAR SÁLARIO          ║");
+        AnsiConsole.MarkupLine("║          [bold blue]ATUALIZAR SÁLARIO[/]          ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (professores.Count == 0)
@@ -359,11 +360,11 @@ class Program
 	{
 		Console.Clear();
 		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║         ESTATÍSTICAS GERAIS         ║");
+        AnsiConsole.MarkupLine("║         [bold red]ESTATÍSTICAS GERAIS[/]         ║");
 		Console.WriteLine("╚═════════════════════════════════════╝");
 
-		Console.WriteLine($"\nTotal de alunos cadastrados: {alunos.Count}");
-		Console.WriteLine($"Total de professores cadastrados: {professores.Count}");
+		AnsiConsole.MarkupLine($"\nTotal de alunos cadastrados: [red]{alunos.Count}[/]");
+		AnsiConsole.MarkupLine($"Total de professores cadastrados: [red]{professores.Count}[/]");
 
 		if (alunos.Count > 0)
 		{
@@ -379,7 +380,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var entrada = Console.ReadLine()?.Trim();
 
@@ -392,7 +393,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var line = Console.ReadLine();
 			int value;
@@ -407,7 +408,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var line = Console.ReadLine();
 			double value;
@@ -424,7 +425,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var line = Console.ReadLine();
 			decimal value;
@@ -441,7 +442,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var line = Console.ReadLine();
 			long value;
@@ -450,7 +451,7 @@ class Program
 				return value;
 			//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
 			//	return value;
-			DestacarMensagem($"Entrada inválida. Siga este modelo: 000.000.000-00.", ConsoleColor.Red);
+			DestacarMensagem($"Entrada inválida. Digite apenas números (11 dígitos).", ConsoleColor.Red);
 		}
 	}
 
@@ -458,7 +459,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 
 			var line = Console.ReadLine();
 			decimal value;
@@ -473,7 +474,7 @@ class Program
 	{
 		while (true)
 		{
-			Console.Write(prompt);
+            AnsiConsole.MarkupLine(prompt);
 			var line = Console.ReadLine();
 			if (int.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value) && value >= 1 && value <= count)
 				return value - 1;
