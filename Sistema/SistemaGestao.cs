@@ -11,7 +11,6 @@ class Program
 	static void Main()
 	{
 
-		AnsiConsole.MarkupLine("[bold blue]Bem-vindo ao Sistema de Gestão Escolar![/]");
 		bool continuar = true;
 		Console.WriteLine("╔═════════════════════════════════════╗");
         AnsiConsole.MarkupLine("║      [bold green]SISTEMA DE GESTÃO ESCOLAR[/]      ║");
