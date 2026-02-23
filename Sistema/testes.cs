@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Spectre.Console;
 
 //MELHORIAS FUTURAS:
@@ -10,6 +11,8 @@ using Spectre.Console;
 
 class Program
 {
+
+	//LISTAS DE PESSOAS
 	static List<Aluno> alunos = new List<Aluno>();
 	static List<Professor> professores = new List<Professor>();
 
@@ -80,17 +83,17 @@ class Program
 	static void EncerrarSistema()
 	{
 		AnsiConsole.Status().Start("Encerrando o sistema...", ctx => {
-			Thread.Sleep(1000);
+			Thread.Sleep(1500);
 		});
 		AnsiConsole.Write(new FigletText("[blue]Ate Logo![/]"));
 	}
 
-	static void DestacarMensagem(string mensagem, ConsoleColor cor)
-	{
-		Console.ForegroundColor = cor;
-		Console.WriteLine(mensagem);
-		Console.ResetColor();
-	}
+	//static void DestacarMensagem(string mensagem, ConsoleColor cor)
+	//{
+	//	Console.ForegroundColor = cor;
+	//	Console.WriteLine(mensagem);
+	//	Console.ResetColor();
+	//}
 
 
 
@@ -150,10 +153,10 @@ class Program
 			.ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
 			.Validate(cpf =>
 			{
-				if (cpf.Length != 11)
+				if (cpf.Length != 11 && !Regex.IsMatch(cpf, @"^\d{11}$"))
 					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
 
-				return ValidationResult.Success();
+                return ValidationResult.Success();
 			})
 		);
 		var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade do Aluno:")
@@ -162,7 +165,7 @@ class Program
 
 		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
 
-		AnsiConsole.MarkupLine($"\n[green]✔[/] Aluno [bold]{nome}[/] cadastrado com sucesso!");
+		AnsiConsole.MarkupLine($"\n[bold green]✔[/] [green]Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
 
 	static void ExibirDetalheAluno()
@@ -170,7 +173,7 @@ class Program
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
+			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -202,7 +205,7 @@ class Program
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
+			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -230,7 +233,7 @@ class Program
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
+			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -262,7 +265,7 @@ class Program
 
 		alunoSelecionado.GetNotas().Add(nota);
 
-		AnsiConsole.MarkupLine($"\n [green]✔[/] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso !");
+		AnsiConsole.MarkupLine($"\n [bold green]✔[/] [green]Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
 	}
 
 
@@ -305,7 +308,7 @@ class Program
 
 		var opcao = AnsiConsole.Prompt(
 						new SelectionPrompt<string>()
-							.Title("Deseja cadastrar um aluno?")
+							.Title("Deseja cadastrar um professor?")
 							.AddChoices(new[] {
 		 						"1. Sim",
 		 						"0. Não"
@@ -328,7 +331,10 @@ class Program
 				if (cpf.Length != 11)
 					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
 
-				return ValidationResult.Success();
+                if (!Regex.IsMatch(cpf, @"^\d{11}$"))
+                    return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+                return ValidationResult.Success();
 			})
 		);
 		var idade = AnsiConsole.Prompt(
@@ -341,14 +347,14 @@ class Program
 		Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
 		professores.Add(novoProfessor);
 
-		AnsiConsole.MarkupLine($"\n[green]✔[/] Professor [bold]{nome}[/] cadastrado com ID: [blue]{professores.Count}[/]");
+		AnsiConsole.MarkupLine($"\n[bold green]✔ [/] [green]Professor [bold]{nome}[/] cadastrado com ID:[/] [blue]{professores.Count}[/]");
 	}
 
 	static void ListarProfessores()
 	{
 		if (professores.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]![/] Nenhum professor cadastrado no sistema.");
+			AnsiConsole.MarkupLine("[yellow]! Nenhum professor cadastrado no sistema.[/]");
 			return;
 		}
 
@@ -367,14 +373,15 @@ class Program
 			string cpf = p.GetCPF();
 			string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
 
-			tabela.AddRow(
+            tabela.AddRow(
 				(i + 1).ToString(),
 				p.GetNome(),
 				cpfFormatado,
 				$"[italic]{p.GetDisciplina()}[/]",
 				$"[green]{ultimoSalario:C}[/]"
 			);
-		}
+            Console.WriteLine(ultimoSalario);
+        }
 
 		AnsiConsole.Write(tabela);
 	}
@@ -390,7 +397,7 @@ class Program
 	{
 		if (professores.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]Nenhum professor cadastrado.[/]");
+			AnsiConsole.MarkupLine("[yellow]! Nenhum professor cadastrado.[/]");
 			return;
 		}
 
@@ -402,17 +409,24 @@ class Program
 		);
 
 		// var novoSalario = AnsiConsole.Ask<decimal>($"Novo salário para [green]{prof.GetNome()}[/]:");
-		var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/]:")
+		var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
 							.ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
 							.Validate(salario =>
 							{
-								if (salario <= 0)
+								//var salarioString = salario.ToString();
+								if (salario < 0)
 								{
-									return ValidationResult.Error("Adicione um salario valido");
+									return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
 								}
+
+								//if (!Regex.IsMatch(salarioString, @"."))
+								//{
+								//	return ValidationResult.Error("[red]Por favor, digite apenas números[/]");
+								//}
+
 								return ValidationResult.Success();
-							}
-						));
+							})
+						);
 
 		AnsiConsole.Status()
 			.Start("Atualizando folha de pagamento...", ctx => {
@@ -420,11 +434,12 @@ class Program
 				prof.GetSalarios().Add(novoSalario);
 			});
 
-		AnsiConsole.MarkupLine("[green]✔[/] Salário atualizado com sucesso!");
+		AnsiConsole.MarkupLine("[bold green]✔[/] [green]Salário atualizado com sucesso![/]");
 	}
 
-	//ESTATISTICAS
-	static void ExibirEstatisticas()
+    //===================== ESTATISTICAS ======================================================
+
+    static void ExibirEstatisticas()
 	{
 
 		Console.Clear();
