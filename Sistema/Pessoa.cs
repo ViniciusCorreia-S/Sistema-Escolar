@@ -6,9 +6,9 @@ abstract class Pessoa
 {
     private string Nome { get; set; } = string.Empty;
     private int Idade { get; set; }
-    private long CPF { get; set; }
+    private string CPF { get; set; }
 
-    public Pessoa(string nome, int idade, long cpf)
+    public Pessoa(string nome, int idade, string cpf)
     {
         Nome = nome;
         Idade = idade;
@@ -23,7 +23,7 @@ abstract class Pessoa
     {
         return Idade;
     }
-    public long GetCPF()
+    public string GetCPF()
     {
         return CPF;
     }

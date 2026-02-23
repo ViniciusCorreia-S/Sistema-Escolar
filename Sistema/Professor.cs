@@ -8,7 +8,7 @@ class Professor : Pessoa
     private List<decimal> Salarios { get; set; } = new List<decimal>();
     private List<string> Turmas { get; set; } = new List<string>();
 
-    public Professor(string nome, int idade, long cpf, string disciplina,
+    public Professor(string nome, int idade, string cpf, string disciplina,
         List<decimal> salarios, List<string> turmas) 
         : base(nome, idade, cpf)
     {

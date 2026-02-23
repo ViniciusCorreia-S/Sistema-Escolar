@@ -5,7 +5,6 @@ using Spectre.Console;
 
 //MELHORIAS FUTURAS:
 // - Implementar exclusão de alunos/professores
-// - Validacao de dados no cpf e mascara (11 dígitos, apenas números)
 // - Validacao no salario de professores (não pode ser negativo e deve ter limite)
 // - Adicionar funcionalidade de turmas (vincular alunos a turmas e professores a turmas)
 
@@ -15,7 +14,7 @@ class Program
 	static List<Professor> professores = new List<Professor>();
 
 
-	//MENU PRINCIAL
+	//===================== MENU PRINCIPAL ======================================================
 
 	static void Main()
 	{
@@ -26,7 +25,7 @@ class Program
 		{
 			Console.Clear();
 
-			var header = new Panel(new Text("SISTEMA DE GESTÃO ESCOLAR", new Style(Color.Green, Color.Black, Decoration.Bold)))
+			var header = new Panel(new Text("SISTEMA DE GESTÃO ESCOLAR", new Style(Color.Green)))
 				.Border(BoxBorder.Double)
 				.Expand();
 
@@ -37,51 +36,53 @@ class Program
 			var opcao = AnsiConsole.Prompt(
 				new SelectionPrompt<string>()
 					.Title("Selecione uma [green]opção[/]:")
-					.PageSize(10)
-					.MoreChoicesText("[grey](Mova para cima e para baixo para revelar mais opções)[/]")
 					.AddChoices(new[] {
 					"1. Gestão de Alunos",
 					"2. Gestão de Professores",
 					"3. Estatísticas Gerais",
 					"0. Sair"
-					}));
+				}));
 
-			switch (opcao)
+			if (opcao.StartsWith("0")) break;
+
+			switch (opcao[0])
 			{
-				case "1. Gestão de Alunos":
-					MenuAlunos();
-					break;
-
-				case "2. Gestão de Professores":
-					MenuProfessores();
-					break;
-
-				case "3. Estatísticas Gerais":
-					ExibirEstatisticas();
-					break;
-
-				case "0. Sair":
-					continuar = false;
-					EncerrarSistema();
-					break;
+				case '1': MenuAlunos(); break;
+				case '2': MenuProfessores(); break;
+				case '3': ExibirEstatisticas(); break;
+				case '0': EncerrarSistema(); continuar = false; break;
 			}
+			// switch (opcao)
+			// {
+			// 	case "1. Gestão de Alunos":
+			// 		MenuAlunos();
+			// 		break;
 
-			if (continuar)
-			{
-				AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para voltar ao menu...[/]");
-				Console.ReadKey(true);
-			}
+			// 	case "2. Gestão de Professores":
+			// 		MenuProfessores();
+			// 		break;
+
+			// 	case "3. Estatísticas Gerais":
+			// 		ExibirEstatisticas();
+			// 		break;
+
+			// 	case "0. Sair":
+			// 		continuar = false;
+			// 		EncerrarSistema();
+			// 		break;
+			// }
+
+			AnsiConsole.MarkupLine("[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+			Console.ReadKey();
 		}
 	}
 
 	static void EncerrarSistema()
 	{
-		AnsiConsole.Status()
-			.Start("Encerrando o sistema...", ctx => {
-				Thread.Sleep(1000);
-			});
-
-		AnsiConsole.Write(new FigletText("Ate Logo!").Color(Color.Blue));
+		AnsiConsole.Status().Start("Encerrando o sistema...", ctx => {
+			Thread.Sleep(1000);
+		});
+		AnsiConsole.Write(new FigletText("[blue]Ate Logo![/]"));
 	}
 
 	static void DestacarMensagem(string mensagem, ConsoleColor cor)
@@ -93,23 +94,25 @@ class Program
 
 
 
-	//ALUNOS
+	//===================== ALUNOS ======================================================
 
 	static void MenuAlunos()
 	{
 		while (true)
 		{
 			Console.Clear();
-			AnsiConsole.Write(new Rule("[bold green]GESTÃO DE ALUNOS[/]").RuleStyle("grey"));
+			AnsiConsole.Write(new Rule("[bold green]GESTÃO DE ALUNOS[/]"));
 
 			var opcao = AnsiConsole.Prompt(
 				new SelectionPrompt<string>()
 					.Title("Selecione uma ação:")
 					.AddChoices(new[] {
-					"1. Cadastrar Aluno", "2. Listar Alunos",
-					"3. Detalhes do Aluno", "4. Adicionar Nota",
+					"1. Cadastrar Aluno",
+					"2. Listar Alunos",
+					"3. Detalhes do Aluno",
+					"4. Adicionar Nota",
 					"0. Voltar"
-					}));
+				}));
 
 			if (opcao.StartsWith("0")) break;
 
@@ -121,18 +124,40 @@ class Program
 				case '4': AdicionarNota(); break;
 			}
 
-			AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
-			Console.ReadKey(true);
+			AnsiConsole.MarkupLine("[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+			Console.ReadKey();
 		}
 	}
 
 	static void CadastrarAluno()
 	{
-		AnsiConsole.Write(new Rule("[bold blue]CADASTRO DE NOVO ALUNO[/]"));
+		var opcao = AnsiConsole.Prompt(
+						new SelectionPrompt<string>()
+							.Title("Deseja cadastrar um aluno?")
+							.AddChoices(new[] {
+		 						"1. Sim",
+		 						"0. Não"
+							})
+						);
 
-		var nome = AnsiConsole.Ask<string>("Nome do aluno:");
-		var cpf = AnsiConsole.Ask<long>("CPF (somente números):");
-		var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade:").ValidationErrorMessage("[red]Idade inválida[/]"));
+		if (opcao.StartsWith("0"))
+			return;
+		
+
+		var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
+			.ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
+		var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Aluno:")
+			.ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
+			.Validate(cpf =>
+			{
+				if (cpf.Length != 11)
+					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+				return ValidationResult.Success();
+			})
+		);
+		var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade do Aluno:")
+			.ValidationErrorMessage("[red]Idade inválida[/]"));
 		var turma = AnsiConsole.Ask<string>("Turma:");
 
 		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
@@ -142,22 +167,31 @@ class Program
 
 	static void ExibirDetalheAluno()
 	{
-		if (alunos.Count == 0) return;
+
+		if (alunos.Count == 0)
+		{
+			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
+			return;
+		}
 
 		var alunoSelecionado = AnsiConsole.Prompt(
 			new SelectionPrompt<Aluno>()
-				.Title("Selecione o aluno para ver detalhes:")
+				.Title("Selecione o [blue]aluno[/] para ver detalhes:")
 				.AddChoices(alunos)
 				.UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
 		);
 
+		string cpf = alunoSelecionado.GetCPF();
+		string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+
 		var card = new Panel(new Markup(
-			$"[bold]CPF:[/] {alunoSelecionado.GetCPF()}\n" +
+			$"[bold]CPF:[/] {cpfFormatado}\n" +
 			$"[bold]Idade:[/] {alunoSelecionado.GetIdade()} anos\n" +
 			$"[bold]Média Acadêmica:[/] [yellow]{alunoSelecionado.CalcularMedia():F2}[/]\n" +
-			$"[bold]Notas:[/] {string.Join(" | ", alunoSelecionado.GetNotas())}"
+			$"[bold]Notas:[/] {string.Join(" | ", alunoSelecionado.GetNotas()) ?? "[red]N/D[/]":F2}"
 		));
-		card.Header($"Ficha Cadastral: {alunoSelecionado.GetNome()}");
+
+		card.Header($"Ficha Cadastral: [bold]{alunoSelecionado.GetNome()}[/]");
 		card.BorderColor(Color.Blue);
 
 		AnsiConsole.Write(card);
@@ -165,13 +199,14 @@ class Program
 
 	static void ListarAlunos()
 	{
+
 		if (alunos.Count == 0)
 		{
 			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
 			return;
 		}
 
-		var tabela = new Table().Border(TableBorder.Rounded);
+		var tabela = new Table().Border(TableBorder.Rounded).Expand();
 		tabela.AddColumn("[blue]ID[/]");
 		tabela.AddColumn("[blue]Nome[/]");
 		tabela.AddColumn("[blue]Turma[/]");
@@ -192,27 +227,46 @@ class Program
 
 	static void AdicionarNota()
 	{
-		Console.Clear();
-		Console.WriteLine("╔═════════════════════════════════════╗");
-		AnsiConsole.MarkupLine("║           [bold blue]ADICIONAR NOTA[/]            ║");
-		Console.WriteLine("╚═════════════════════════════════════╝");
 
 		if (alunos.Count == 0)
 		{
-			DestacarMensagem("\nNenhum aluno cadastrado.", ConsoleColor.Yellow);
+			AnsiConsole.MarkupLine("[yellow]![/] Nenhum aluno cadastrado.");
 			return;
 		}
 
 		ListarAlunos();
-		int indice = ReadIndexChoice("\nDigite o [blue]número de ID[/] do aluno: ", alunos.Count);
 
-		double nota = ReadDoubleInRange("\nDigite a [blue]nota[/] a ser adicionada (0 a 10): ", 0, 10);
-		alunos[indice].GetNotas().Add(nota);
-		DestacarMensagem($"\nNota adicionada com sucesso para {alunos[indice].GetNome()}!", ConsoleColor.Green);
+		var alunoSelecionado = AnsiConsole.Prompt(
+			new SelectionPrompt<Aluno>()
+				.Title("Selecione o [blue]aluno[/] que receberar a nota:")
+				.AddChoices(alunos)
+				.UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+		);
+
+		//if (alunoSelecionado.StartsWith("0"))
+		//	return;
+
+		// int indice = AnsiConsole.Prompt(new TextPrompt<int>("Indice:").ValidationErrorMessage("[red]Indice inválido[/]"));
+
+		// double nota = ReadDoubleInRange("\nDigite a [blue]nota[/] a ser adicionada (0 a 10): ", 0, 10);
+		double nota = AnsiConsole
+						.Prompt(new TextPrompt<double>("Digite a [blue]nota[/] a ser adicionada (0 a 10): ")
+							.ValidationErrorMessage("[red]Nota inválida (digite um número de 0 a 10)[/]")
+							.Validate(notaNova => {
+								if (notaNova >= 0 && notaNova <= 10)
+									return ValidationResult.Success();
+
+								return ValidationResult.Error("[red]A nota deve ser um número de 0 a 10[/]");
+							})
+						);
+
+		alunoSelecionado.GetNotas().Add(nota);
+
+		AnsiConsole.MarkupLine($"\n [green]✔[/] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso !");
 	}
 
 
-	//PROFESSORES
+	//===================== PROFESSORES ======================================================
 
 	static void MenuProfessores()
 	{
@@ -248,10 +302,35 @@ class Program
 
 	static void CadastrarProfessor()
 	{
-		AnsiConsole.Write(new Rule("[bold blue]NOVO REGISTRO DE PROFESSOR[/]"));
 
-		var nome = AnsiConsole.Ask<string>("Nome completo:");
-		var cpf = AnsiConsole.Ask<long>("CPF (somente números):");
+		var opcao = AnsiConsole.Prompt(
+						new SelectionPrompt<string>()
+							.Title("Deseja cadastrar um aluno?")
+							.AddChoices(new[] {
+		 						"1. Sim",
+		 						"0. Não"
+							})
+						);
+
+		if (opcao.StartsWith("0"))
+			return;
+
+		// AnsiConsole.Write(new Rule("[bold blue]NOVO REGISTRO DE PROFESSOR[/]"));
+
+		// var nome = AnsiConsole.Ask<string>("Nome completo:");
+		var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Professor:")
+			.ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
+		// var cpf = AnsiConsole.Ask<string>("CPF (somente números):");
+		var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Professor:")
+			.ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
+			.Validate(cpf =>
+			{
+				if (cpf.Length != 11)
+					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+				return ValidationResult.Success();
+			})
+		);
 		var idade = AnsiConsole.Prompt(
 			new TextPrompt<int>("Idade:")
 				.ValidationErrorMessage("[red]Por favor, insira uma idade válida.[/]")
@@ -276,6 +355,7 @@ class Program
 		var tabela = new Table().Border(TableBorder.Rounded).Expand();
 		tabela.AddColumn("[blue]ID[/]");
 		tabela.AddColumn("[blue]Nome[/]");
+		tabela.AddColumn("[blue]CPF[/]");
 		tabela.AddColumn("[blue]Disciplina[/]");
 		tabela.AddColumn("[blue]Último Salário[/]");
 
@@ -284,11 +364,15 @@ class Program
 			var p = professores[i];
 			decimal ultimoSalario = p.GetSalarios().Count > 0 ? p.GetSalarios()[^1] : 0;
 
+			string cpf = p.GetCPF();
+			string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+
 			tabela.AddRow(
 				(i + 1).ToString(),
 				p.GetNome(),
+				cpfFormatado,
 				$"[italic]{p.GetDisciplina()}[/]",
-				$"[green]{ultimoSalario:C}[/]" 
+				$"[green]{ultimoSalario:C}[/]"
 			);
 		}
 
@@ -317,7 +401,18 @@ class Program
 				.UseConverter(p => p.GetNome())
 		);
 
-		var novoSalario = AnsiConsole.Ask<decimal>($"Novo salário para [green]{prof.GetNome()}[/]:");
+		// var novoSalario = AnsiConsole.Ask<decimal>($"Novo salário para [green]{prof.GetNome()}[/]:");
+		var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/]:")
+							.ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
+							.Validate(salario =>
+							{
+								if (salario <= 0)
+								{
+									return ValidationResult.Error("Adicione um salario valido");
+								}
+								return ValidationResult.Success();
+							}
+						));
 
 		AnsiConsole.Status()
 			.Start("Atualizando folha de pagamento...", ctx => {
@@ -357,115 +452,111 @@ class Program
 
 		AnsiConsole.Write(grid);
 		AnsiConsole.WriteLine();
-
-		AnsiConsole.MarkupLine("[italic grey]Pressione qualquer tecla para retornar...[/]");
-		Console.ReadKey();
-
 	}
 
-	static string ReadNonEmptyString(string prompt)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static string ReadNonEmptyString(string prompt)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var entrada = Console.ReadLine()?.Trim();
+	// 		var entrada = Console.ReadLine()?.Trim();
 
-			if (!string.IsNullOrEmpty(entrada)) return entrada;
-			DestacarMensagem("Entrada vazia. Tente novamente.", ConsoleColor.Yellow);
-		}
-	}
+	// 		if (!string.IsNullOrEmpty(entrada)) return entrada;
+	// 		DestacarMensagem("Entrada vazia. Tente novamente.", ConsoleColor.Yellow);
+	// 	}
+	// }
 
-	static int ReadIntInRange(string prompt, int min, int max)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static int ReadIntInRange(string prompt, int min, int max)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var line = Console.ReadLine();
-			int value;
+	// 		var line = Console.ReadLine();
+	// 		int value;
 
-			if (int.TryParse(line, out value) && value >= min && value <= max)
-				return value;
-			DestacarMensagem($"Entrada inválida. Digite um número inteiro maior que {min}.", ConsoleColor.Red);
-		}
-	}
+	// 		if (int.TryParse(line, out value) && value >= min && value <= max)
+	// 			return value;
+	// 		DestacarMensagem($"Entrada inválida. Digite um número inteiro maior que {min}.", ConsoleColor.Red);
+	// 	}
+	// }
 
-	static double ReadDoubleInRange(string prompt, double min, double max)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static double ReadDoubleInRange(string prompt, double min, double max)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var line = Console.ReadLine();
-			double value;
+	// 		var line = Console.ReadLine();
+	// 		double value;
 
-			if (double.TryParse(line, out value) && value >= min && value <= max)
-				return value;
-			//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
-			//	return value;
-			DestacarMensagem($"Entrada inválida. Digite um número entre {min} e {max}.", ConsoleColor.Red);
-		}
-	}
+	// 		if (double.TryParse(line, out value) && value >= min && value <= max)
+	// 			return value;
+	// 		//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
+	// 		//	return value;
+	// 		DestacarMensagem($"Entrada inválida. Digite um número entre {min} e {max}.", ConsoleColor.Red);
+	// 	}
+	// }
 
-	static decimal ReadDecimalInRange(string prompt, decimal min, decimal max)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static decimal ReadDecimalInRange(string prompt, decimal min, decimal max)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var line = Console.ReadLine();
-			decimal value;
+	// 		var line = Console.ReadLine();
+	// 		decimal value;
 
-			if (decimal.TryParse(line, out value) && value >= min && value <= max)
-				return value;
-			//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
-			//	return value;
-			DestacarMensagem($"Entrada inválida. Digite um número maior que {min}.", ConsoleColor.Red);
-		}
-	}
+	// 		if (decimal.TryParse(line, out value) && value >= min && value <= max)
+	// 			return value;
+	// 		//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
+	// 		//	return value;
+	// 		DestacarMensagem($"Entrada inválida. Digite um número maior que {min}.", ConsoleColor.Red);
+	// 	}
+	// }
 
-	static long ReadLongInRange(string prompt, long min, long max)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static long ReadLongInRange(string prompt, long min, long max)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var line = Console.ReadLine();
-			long value;
+	// 		var line = Console.ReadLine();
+	// 		long value;
 
-			if (long.TryParse(line, out value) && value >= min && value <= max)
-				return value;
-			//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
-			//	return value;
-			DestacarMensagem($"Entrada inválida. Digite apenas números (11 dígitos).", ConsoleColor.Red);
-		}
-	}
+	// 		if (long.TryParse(line, out value) && value >= min && value <= max)
+	// 			return value;
+	// 		//if (double.TryParse(line, NumberStyles.Number, CultureInfo.CurrentCulture, out double value) && value >= min && value <= max)
+	// 		//	return value;
+	// 		DestacarMensagem($"Entrada inválida. Digite apenas números (11 dígitos).", ConsoleColor.Red);
+	// 	}
+	// }
 
-	static decimal ReadDecimalNonNegative(string prompt)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
+	// static decimal ReadDecimalNonNegative(string prompt)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
 
-			var line = Console.ReadLine();
-			decimal value;
+	// 		var line = Console.ReadLine();
+	// 		decimal value;
 
-			if (decimal.TryParse(line, out value) && value >= 0)
-				return value;
-			DestacarMensagem("Entrada inválida. Digite um número decimal não-negativo.", ConsoleColor.Red);
-		}
-	}
+	// 		if (decimal.TryParse(line, out value) && value >= 0)
+	// 			return value;
+	// 		DestacarMensagem("Entrada inválida. Digite um número decimal não-negativo.", ConsoleColor.Red);
+	// 	}
+	// }
 
-	static int ReadIndexChoice(string prompt, int count)
-	{
-		while (true)
-		{
-			AnsiConsole.MarkupLine(prompt);
-			var line = Console.ReadLine();
-			if (int.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value) && value >= 1 && value <= count)
-				return value - 1;
-			DestacarMensagem($"Escolha inválida. Digite um número entre 1 e {count}.", ConsoleColor.Red);
-		}
-	}
+	// static int ReadIndexChoice(string prompt, int count)
+	// {
+	// 	while (true)
+	// 	{
+	// 		AnsiConsole.MarkupLine(prompt);
+	// 		var line = Console.ReadLine();
+	// 		if (int.TryParse(line, NumberStyles.Integer, CultureInfo.CurrentCulture, out int value) && value >= 1 && value <= count)
+	// 			return value - 1;
+	// 		DestacarMensagem($"Escolha inválida. Digite um número entre 1 e {count}.", ConsoleColor.Red);
+	// 	}
+	// }
 }
