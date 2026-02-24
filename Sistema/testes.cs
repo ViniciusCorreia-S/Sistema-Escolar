@@ -5,8 +5,6 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 
 //MELHORIAS FUTURAS:
-// - Implementar exclusão de alunos/professores
-// - Validacao no salario de professores (não pode ser negativo e deve ter limite)
 // - Adicionar funcionalidade de turmas (vincular alunos a turmas e professores a turmas)
 
 class Program
@@ -17,9 +15,12 @@ class Program
 	static List<Professor> professores = new List<Professor>();
 
 
-	//===================== MENU PRINCIPAL ======================================================
+//===================== MENU PRINCIPAL ======================================================
 
-	static void Main()
+//CHECKMARK
+static char check = '\u2714';
+
+    static void Main()
 	{
 
 		bool continuar = true;
@@ -75,7 +76,7 @@ class Program
 			// 		break;
 			// }
 
-			AnsiConsole.MarkupLine("[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+			AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
 			Console.ReadKey();
 		}
 	}
@@ -114,6 +115,7 @@ class Program
 					"2. Listar Alunos",
 					"3. Detalhes do Aluno",
 					"4. Adicionar Nota",
+					"5. Remover Aluno",
 					"0. Voltar"
 				}));
 
@@ -125,9 +127,10 @@ class Program
 				case '2': ListarAlunos(); break;
 				case '3': ExibirDetalheAluno(); break;
 				case '4': AdicionarNota(); break;
+				case '5': RemoverAluno(); break;
 			}
 
-			AnsiConsole.MarkupLine("[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+			AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
 			Console.ReadKey();
 		}
 	}
@@ -153,8 +156,14 @@ class Program
 			.ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
 			.Validate(cpf =>
 			{
-				if (cpf.Length != 11 && !Regex.IsMatch(cpf, @"^\d{11}$"))
+				if (cpf.Length != 11 || !Regex.IsMatch(cpf, @"^\d{11}$"))
 					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+                if (alunos.Any(a => a.CPF == cpf))
+                {
+                    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
+                    return;
+                }
 
                 return ValidationResult.Success();
 			})
@@ -165,7 +174,7 @@ class Program
 
 		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
 
-		AnsiConsole.MarkupLine($"\n[bold green]✔[/] [green]Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n {check} [green]Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
 
 	static void ExibirDetalheAluno()
@@ -173,7 +182,7 @@ class Program
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -200,12 +209,14 @@ class Program
 		AnsiConsole.Write(card);
 	}
 
+
+
 	static void ListarAlunos()
 	{
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -233,7 +244,7 @@ class Program
 
 		if (alunos.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]! Nenhum aluno cadastrado.[/]");
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
 			return;
 		}
 
@@ -265,8 +276,40 @@ class Program
 
 		alunoSelecionado.GetNotas().Add(nota);
 
-		AnsiConsole.MarkupLine($"\n [bold green]✔[/] [green]Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
+		AnsiConsole.MarkupLine($"\n {check} [green]Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
 	}
+
+	static void RemoverAluno()
+	{
+        if (alunos.Count == 0)
+        {
+            AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
+            return;
+        }
+
+        var alunoSelecionado = AnsiConsole.Prompt(
+            new SelectionPrompt<Aluno>()
+                .Title("Selecione o [blue]aluno[/] que sera removido:")
+                .AddChoices(alunos)
+                .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
+        );
+
+        var confirmar = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Tem certeza que deseja remover este aluno?")
+                            .AddChoices(new[] {
+                                 "1. Sim",
+                                 "0. Não"
+                            })
+                        );
+
+        if (opcao.StartsWith("0"))
+            return;
+
+        alunos.Remove(alunoSelecionado);
+
+        AnsiConsole.MarkupLine($"\n {check} [green]Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
+    }
 
 
 	//===================== PROFESSORES ======================================================
@@ -286,6 +329,7 @@ class Program
 					"1. Cadastrar Professor",
 					"2. Listar Professores",
 					"3. Atualizar Salário",
+					"4. Remover Professor",
 					"0. Voltar"
 					}));
 
@@ -296,6 +340,7 @@ class Program
 				case '1': CadastrarProfessor(); break;
 				case '2': ListarProfessores(); break;
 				case '3': SalarioProfessor(); break;
+				case '4': RemoverProfessor(); break;
 			}
 
 			AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
@@ -347,14 +392,14 @@ class Program
 		Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
 		professores.Add(novoProfessor);
 
-		AnsiConsole.MarkupLine($"\n[bold green]✔ [/] [green]Professor [bold]{nome}[/] cadastrado com ID:[/] [blue]{professores.Count}[/]");
+		AnsiConsole.MarkupLine($"\n {check} [green]Professor [bold]{nome}[/] cadastrado com ID:[/] [blue]{professores.Count}[/]");
 	}
 
 	static void ListarProfessores()
 	{
 		if (professores.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]! Nenhum professor cadastrado no sistema.[/]");
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado no sistema.[/]");
 			return;
 		}
 
@@ -385,19 +430,12 @@ class Program
 
 		AnsiConsole.Write(tabela);
 	}
-	static void AdicionarTurma()
-	{
-		Console.WriteLine("╔═════════════════════════════════════╗");
-		Console.WriteLine("║           ADICIONAR TURMA           ║");
-		Console.WriteLine("╚═════════════════════════════════════╝");
-	}
-
 
 	static void SalarioProfessor()
 	{
 		if (professores.Count == 0)
 		{
-			AnsiConsole.MarkupLine("[yellow]! Nenhum professor cadastrado.[/]");
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
 			return;
 		}
 
@@ -434,8 +472,28 @@ class Program
 				prof.GetSalarios().Add(novoSalario);
 			});
 
-		AnsiConsole.MarkupLine("[bold green]✔[/] [green]Salário atualizado com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n {check} [green]Salário atualizado com sucesso![/]");
 	}
+
+    static void RemoverProfessor()
+    {
+        if (professores.Count == 0)
+        {
+            AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
+            return;
+        }
+
+        var profSelecionado = AnsiConsole.Prompt(
+            new SelectionPrompt<Professor>()
+                .Title("Selecione o [blue]professor[/] que sera removido:")
+                .AddChoices(professores)
+                .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.GetDisciplina()}")
+        );
+
+        professores.Remove(profSelecionado);
+
+        AnsiConsole.MarkupLine($"\n {check} [green]Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
+    }
 
     //===================== ESTATISTICAS ======================================================
 
@@ -462,13 +520,12 @@ class Program
 		}
 		else
 		{
-			grid.AddRow(table, new Text("Sem dados de média"));
+			grid.AddRow(table, new Text("[yellow]Sem dados de média[/]"));
 		}
 
 		AnsiConsole.Write(grid);
 		AnsiConsole.WriteLine();
 	}
-
 	// static string ReadNonEmptyString(string prompt)
 	// {
 	// 	while (true)
