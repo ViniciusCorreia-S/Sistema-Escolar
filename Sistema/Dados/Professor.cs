@@ -4,9 +4,11 @@ using System.Text;
 
 class Professor : Pessoa
 {
-    private string Disciplina { get; set; } = string.Empty;
-    private List<decimal> Salarios { get; set; } = new List<decimal>();
-    private List<string> Turmas { get; set; } = new List<string>();
+    public string Disciplina { get; set; } = string.Empty;
+    public List<decimal> Salarios { get; set; } = new List<decimal>();
+    public List<string> Turmas { get; set; } = new List<string>();
+
+    public Professor() { }
 
     public Professor(string nome, int idade, string cpf, string disciplina,
         List<decimal> salarios, List<string> turmas) 

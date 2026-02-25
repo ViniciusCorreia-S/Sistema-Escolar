@@ -4,8 +4,10 @@ using System.Text;
 
 class Aluno : Pessoa
 {
-    private string Turma { get; set; } = string.Empty;
-    private List<double> Notas { get; set; } = new List<double>();
+    public string Turma { get; set; } = string.Empty;
+    public List<double> Notas { get; set; } = new List<double>();
+
+    public Aluno() { }
 
     public Aluno(string nome, int idade, string cpf, string turma,
         List<double> notas) 

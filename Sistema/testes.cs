@@ -3,27 +3,69 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Spectre.Console;
+using System.Text.Json;
 
 //MELHORIAS FUTURAS:
 // - Adicionar funcionalidade de turmas (vincular alunos a turmas e professores a turmas)
+// - Corrigir erro do "." em salario
 
 class Program
 {
 
-	//LISTAS DE PESSOAS
-	static List<Aluno> alunos = new List<Aluno>();
-	static List<Professor> professores = new List<Professor>();
+    //===================== DadosSalvos =====================
+    static string nomeArquivoAluno = "alunos.json";
+    static string nomeArquivoProf = "professores.json";
 
+    //===================== LISTAS DE PESSOAS =====================
+    static List<Aluno> alunos = CarregarAlunos();
+	static List<Professor> professores = CarregarProfessores();
+
+    //===================== PERSISTÊNCIA =====================
+    static void SalvarAlunos()
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        string json = JsonSerializer.Serialize(alunos, options);
+        File.WriteAllText(nomeArquivoAluno, json);
+    }
+
+    static List<Aluno> CarregarAlunos()
+    {
+        if (!File.Exists(nomeArquivoAluno))
+            return new List<Aluno>();
+
+        string json = File.ReadAllText(nomeArquivoAluno);
+
+        return JsonSerializer.Deserialize<List<Aluno>>(json)
+               ?? new List<Aluno>();
+    }
+
+    static void SalvarProfessores()
+    {
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        string json = JsonSerializer.Serialize(professores, options);
+        File.WriteAllText(nomeArquivoProf, json);
+    }
+
+    static List<Professor> CarregarProfessores()
+    {
+        if (!File.Exists(nomeArquivoProf))
+            return new List<Professor>();
+
+        string json = File.ReadAllText(nomeArquivoProf);
+
+        return JsonSerializer.Deserialize<List<Professor>>(json)
+               ?? new List<Professor>();
+    }
+
+    //CHECKMARK
+    static char check = '\u2714';
 
 //===================== MENU PRINCIPAL ======================================================
-
-//CHECKMARK
-static char check = '\u2714';
 
     static void Main()
 	{
 
-		bool continuar = true;
+        bool continuar = true;
 
 		while (continuar)
 		{
@@ -81,12 +123,12 @@ static char check = '\u2714';
 		}
 	}
 
-	static void EncerrarSistema()
+    //===================== ENCERRAR SISTEMA =====================
+    static void EncerrarSistema()
 	{
 		AnsiConsole.Status().Start("Encerrando o sistema...", ctx => {
 			Thread.Sleep(1500);
 		});
-		AnsiConsole.Write(new FigletText("[blue]Ate Logo![/]"));
 	}
 
 	//static void DestacarMensagem(string mensagem, ConsoleColor cor)
@@ -135,19 +177,20 @@ static char check = '\u2714';
 		}
 	}
 
-	static void CadastrarAluno()
+    //===================== CADASTRO DE ALUNO ==========================================
+    static void CadastrarAluno()
 	{
-		var opcao = AnsiConsole.Prompt(
-						new SelectionPrompt<string>()
-							.Title("Deseja cadastrar um aluno?")
-							.AddChoices(new[] {
-		 						"1. Sim",
-		 						"0. Não"
-							})
-						);
+		//var opcao = AnsiConsole.Prompt(
+		//				new SelectionPrompt<string>()
+		//					.Title("Deseja cadastrar um aluno?")
+		//					.AddChoices(new[] {
+		// 						"1. Sim",
+		// 						"0. Não"
+		//					})
+		//				);
 
-		if (opcao.StartsWith("0"))
-			return;
+		//if (opcao.StartsWith("0"))
+		//	return;
 		
 
 		var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
@@ -159,11 +202,9 @@ static char check = '\u2714';
 				if (cpf.Length != 11 || !Regex.IsMatch(cpf, @"^\d{11}$"))
 					return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
 
-                if (alunos.Any(a => a.CPF == cpf))
-                {
-                    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
-                    return;
-                }
+                //if (alunos.Any(a => a.CPF == cpf))
+                //    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
+                //    return;
 
                 return ValidationResult.Success();
 			})
@@ -174,10 +215,13 @@ static char check = '\u2714';
 
 		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
 
-		AnsiConsole.MarkupLine($"\n {check} [green]Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+        SalvarAlunos();
+
+        AnsiConsole.MarkupLine($"\n {check} [green ] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
 
-	static void ExibirDetalheAluno()
+    //===================== DETALHES DE ALUNO ==========================================
+    static void ExibirDetalheAluno()
 	{
 
 		if (alunos.Count == 0)
@@ -209,9 +253,8 @@ static char check = '\u2714';
 		AnsiConsole.Write(card);
 	}
 
-
-
-	static void ListarAlunos()
+    //===================== LISTA DE ALUNO ==========================================
+    static void ListarAlunos()
 	{
 
 		if (alunos.Count == 0)
@@ -239,7 +282,8 @@ static char check = '\u2714';
 		AnsiConsole.Write(tabela);
 	}
 
-	static void AdicionarNota()
+    //===================== ADICIONAR NOTA ==========================================
+    static void AdicionarNota()
 	{
 
 		if (alunos.Count == 0)
@@ -276,10 +320,13 @@ static char check = '\u2714';
 
 		alunoSelecionado.GetNotas().Add(nota);
 
-		AnsiConsole.MarkupLine($"\n {check} [green]Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
+        SalvarAlunos();
+
+        AnsiConsole.MarkupLine($"\n {check} [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
 	}
 
-	static void RemoverAluno()
+    //===================== REMOVER ==========================================
+    static void RemoverAluno()
 	{
         if (alunos.Count == 0)
         {
@@ -303,12 +350,14 @@ static char check = '\u2714';
                             })
                         );
 
-        if (opcao.StartsWith("0"))
+        if (confirmar.StartsWith("0"))
             return;
 
         alunos.Remove(alunoSelecionado);
 
-        AnsiConsole.MarkupLine($"\n {check} [green]Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
+        SalvarAlunos();
+
+        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
     }
 
 
@@ -348,20 +397,21 @@ static char check = '\u2714';
 		}
 	}
 
-	static void CadastrarProfessor()
+    //===================== CADASTRO ==========================================
+    static void CadastrarProfessor()
 	{
 
-		var opcao = AnsiConsole.Prompt(
-						new SelectionPrompt<string>()
-							.Title("Deseja cadastrar um professor?")
-							.AddChoices(new[] {
-		 						"1. Sim",
-		 						"0. Não"
-							})
-						);
+		//var opcao = AnsiConsole.Prompt(
+		//				new SelectionPrompt<string>()
+		//					.Title("Deseja cadastrar um professor?")
+		//					.AddChoices(new[] {
+		// 						"1. Sim",
+		// 						"0. Não"
+		//					})
+		//				);
 
-		if (opcao.StartsWith("0"))
-			return;
+		//if (opcao.StartsWith("0"))
+		//	return;
 
 		// AnsiConsole.Write(new Rule("[bold blue]NOVO REGISTRO DE PROFESSOR[/]"));
 
@@ -392,10 +442,13 @@ static char check = '\u2714';
 		Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
 		professores.Add(novoProfessor);
 
-		AnsiConsole.MarkupLine($"\n {check} [green]Professor [bold]{nome}[/] cadastrado com ID:[/] [blue]{professores.Count}[/]");
+        SalvarProfessores();
+
+        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso!");
 	}
 
-	static void ListarProfessores()
+    //===================== LISTA ==========================================
+    static void ListarProfessores()
 	{
 		if (professores.Count == 0)
 		{
@@ -431,7 +484,8 @@ static char check = '\u2714';
 		AnsiConsole.Write(tabela);
 	}
 
-	static void SalarioProfessor()
+    //===================== SALARIO ==========================================
+    static void SalarioProfessor()
 	{
 		if (professores.Count == 0)
 		{
@@ -470,11 +524,13 @@ static char check = '\u2714';
 			.Start("Atualizando folha de pagamento...", ctx => {
 				Thread.Sleep(800);
 				prof.GetSalarios().Add(novoSalario);
-			});
+                SalvarProfessores();
+            });
 
-		AnsiConsole.MarkupLine($"\n {check} [green]Salário atualizado com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n {check} [green] Salário atualizado com sucesso![/]");
 	}
 
+    //===================== REMOVER ==========================================
     static void RemoverProfessor()
     {
         if (professores.Count == 0)
@@ -492,10 +548,12 @@ static char check = '\u2714';
 
         professores.Remove(profSelecionado);
 
-        AnsiConsole.MarkupLine($"\n {check} [green]Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
+        SalvarProfessores();
+
+        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
     }
 
-    //===================== ESTATISTICAS ======================================================
+    //===================== ESTATISTICAS GERAIS ======================================================
 
     static void ExibirEstatisticas()
 	{

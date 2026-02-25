@@ -4,9 +4,11 @@ using System.Text;
 
 abstract class Pessoa
 {
-    private string Nome { get; set; } = string.Empty;
-    private int Idade { get; set; }
-    private string CPF { get; set; }
+    public string Nome { get; set; } = string.Empty;
+    public int Idade { get; set; }
+    public string CPF { get; set; }
+
+    public Pessoa() { }
 
     public Pessoa(string nome, int idade, string cpf)
     {
