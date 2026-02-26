@@ -19,6 +19,7 @@ class Program
     //===================== LISTAS DE PESSOAS =====================
     static List<Aluno> alunos = CarregarAlunos();
 	static List<Professor> professores = CarregarProfessores();
+	static List<Turma> turmas = new List<Turma>();
 
     //===================== PERSISTÊNCIA =====================
     static void SalvarAlunos()
@@ -85,7 +86,8 @@ class Program
 					.AddChoices(new[] {
 					"1. Gestão de Alunos",
 					"2. Gestão de Professores",
-					"3. Estatísticas Gerais",
+					"3. Gestão de Turmas",
+					"4. Estatísticas Gerais",
 					"0. Sair"
 				}));
 
@@ -95,7 +97,8 @@ class Program
 			{
 				case '1': MenuAlunos(); break;
 				case '2': MenuProfessores(); break;
-				case '3': ExibirEstatisticas(); break;
+				case '3': AbrirNovaTurma(); break;
+				case '4': ExibirEstatisticas(); break;
 				case '0': EncerrarSistema(); continuar = false; break;
 			}
 			// switch (opcao)
@@ -180,6 +183,12 @@ class Program
     //===================== CADASTRO DE ALUNO ==========================================
     static void CadastrarAluno()
 	{
+
+		if (turmas.Count == 0)
+		{
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
+			return;
+		}
 		//var opcao = AnsiConsole.Prompt(
 		//				new SelectionPrompt<string>()
 		//					.Title("Deseja cadastrar um aluno?")
@@ -191,7 +200,6 @@ class Program
 
 		//if (opcao.StartsWith("0"))
 		//	return;
-		
 
 		var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
 			.ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
@@ -211,13 +219,23 @@ class Program
 		);
 		var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade do Aluno:")
 			.ValidationErrorMessage("[red]Idade inválida[/]"));
-		var turma = AnsiConsole.Ask<string>("Turma:");
+
+		var turmaSelecionada = AnsiConsole.Prompt(
+			new SelectionPrompt<Turma>()
+				.Title("Selecione a turma do [blue]aluno[/]:")
+				.AddChoices(turmas)
+				.UseConverter(t => $"Turma: {t.GetNomeTurma()}")
+		);
+
+		var turma = turmaSelecionada.ToString() ?? "[red]N/D[/]";
+
+		//turmas.Add(new Turma(new char, nome));
 
 		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
 
         SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n {check} [green ] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
 
     //===================== DETALHES DE ALUNO ==========================================
@@ -553,9 +571,85 @@ class Program
         AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
     }
 
-    //===================== ESTATISTICAS GERAIS ======================================================
+	//	===================== TURMAS ======================================================
 
-    static void ExibirEstatisticas()
+	static void MenuTurmas()
+	{
+		while (true)
+		{
+			Console.Clear();
+
+			var opcao = AnsiConsole.Prompt(
+				new SelectionPrompt<string>()
+					.Title("Selecione uma ação:")
+					.PageSize(10)
+					.AddChoices(new[] {
+					"1. Abrir Nova Turma",
+					"2. Turmas Abertas",
+					"3. Fechar Turma",
+					"0. Voltar"
+					}));
+
+			if (opcao.StartsWith("0")) break;
+
+			switch (opcao[0])
+			{
+				case '1': AbrirNovaTurma(); break;
+				case '2': ListarTurmas(); break;
+				case '3': "Não"; break;
+			}
+
+			Console.ReadKey(true);
+		}
+	}
+
+	static void AbrirNovaTurma()
+	{
+		var nomeTurma = AnsiConsole.Prompt(new TextPrompt<char>("Nome da nova turma, escolha uma letra (A-Z):")
+							.ValidationErrorMessage("[red]Nome inválido (digite apenas uma letra A-Z[/]")
+						);
+
+		bool turmaExiste = turmas.Any(t => t.GetNomeTurma() == nomeTurma);
+
+		if (turmaExiste)
+		{
+			AnsiConsole.MarkupLine($"\n[red]Já existe uma turma com o nome [bold]{nomeTurma}[/]![/]");
+			return;
+		}
+
+		turmas.Add(new Turma(nomeTurma, new List<string>()));
+
+		AnsiConsole.MarkupLine($"\n {check} [green] Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
+	}
+
+	static void ListarTurmas()
+	{
+
+		if (turmas.Count == 0)
+		{
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
+			return;
+		}
+
+		var tabela = new Table().Border(TableBorder.Rounded).Expand();
+		tabela.AddColumn("[blue]Turma[/]");
+		tabela.AddColumn("[blue]Média Acadêmica da Turma[/]");
+
+		for (int i = 0; i < turmas.Count; i++)
+		{
+			tabela.AddRow(
+				turmas[i].GetNomeTurma(),
+				"N/D"
+				//$"[green]{turmas[i].GetCalcularMedia():F2}[/]"
+			);
+		}
+
+		AnsiConsole.Write(tabela);
+	}
+
+		//===================== ESTATISTICAS GERAIS ======================================================
+
+	static void ExibirEstatisticas()
 	{
 
 		Console.Clear();
@@ -568,18 +662,21 @@ class Program
 
 		var table = new Table().Border(TableBorder.Rounded);
 		table.AddColumn("Tipo").AddColumn("Total");
+		table.AddRow("Turmas", $"[blue]{turmas.Count}[/]");
 		table.AddRow("Alunos", $"[blue]{alunos.Count}[/]");
 		table.AddRow("Professores", $"[green]{professores.Count}[/]");
 
-		if (alunos.Count > 0)
-		{
-			double media = alunos.Average(a => a.CalcularMedia());
-			grid.AddRow(table, new Panel($"[bold]Média Acadêmica:[/] {media:F2}").Expand());
-		}
-		else
-		{
-			grid.AddRow(table, new Text("[yellow]Sem dados de média[/]"));
-		}
+		//if (alunos.Count > 0)
+		//{
+		//	double media = alunos.Average(a => a.CalcularMedia());
+		//	grid.AddRow(table, new Panel($"[bold]Média Acadêmica:[/] {media:F2}").Expand());
+		//}
+		//else
+		//{
+		//	grid.AddRow(table, new Panel("[yellow]Sem dados de média[/]"));
+		//}
+		
+		grid.AddRow(new Panel($"[bold]Ultima Atualização:[/] {DateTime.Now:dd/MM/yyyy HH:mm}").Expand());
 
 		AnsiConsole.Write(grid);
 		AnsiConsole.WriteLine();
