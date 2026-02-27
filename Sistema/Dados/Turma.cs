@@ -4,24 +4,32 @@ using System.Text;
 
 class Turma
 {
-	private char NomeTurma { get; set; }
-	private List<string> AlunosTurma { get; set; } = new List<string>();
+    private char NomeTurma;
+    private List<Aluno> alunos;
 
-	public Turma() { }
+    public Turma(char nomeTurma)
+    {
+        NomeTurma = nomeTurma;
+        alunos = new List<Aluno>();
+    }
 
-	public Turma(char nometurma, List<string> alunosturma)
-	{
-		NomeTurma = nometurma;
-		AlunosTurma = alunosturma;
-	}
+    public char GetNomeTurma()
+    {
+        return NomeTurma;
+    }
 
-	public char GetNomeTurma()
-	{
-		return NomeTurma;
-	}
-	public List<string> GetAlunosTurma()
-	{
-		return AlunosTurma;
-	}
+    public List<Aluno> GetAlunos()
+    {
+        return alunos;
+    }
 
+    public void AdicionarAluno(Aluno aluno)
+    {
+        alunos.Add(aluno);
+    }
+
+    public void RemoverAluno(Aluno aluno)
+    {
+        alunos.Remove(aluno);
+    }
 }

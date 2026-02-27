@@ -97,7 +97,7 @@ class Program
 			{
 				case '1': MenuAlunos(); break;
 				case '2': MenuProfessores(); break;
-				case '3': AbrirNovaTurma(); break;
+				case '3': MenuTurmas(); break;
 				case '4': ExibirEstatisticas(); break;
 				case '0': EncerrarSistema(); continuar = false; break;
 			}
@@ -189,17 +189,7 @@ class Program
 			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
 			return;
 		}
-		//var opcao = AnsiConsole.Prompt(
-		//				new SelectionPrompt<string>()
-		//					.Title("Deseja cadastrar um aluno?")
-		//					.AddChoices(new[] {
-		// 						"1. Sim",
-		// 						"0. Não"
-		//					})
-		//				);
-
-		//if (opcao.StartsWith("0"))
-		//	return;
+		
 
 		var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
 			.ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
@@ -227,13 +217,19 @@ class Program
 				.UseConverter(t => $"Turma: {t.GetNomeTurma()}")
 		);
 
-		var turma = turmaSelecionada.ToString() ?? "[red]N/D[/]";
+		var novoAluno = new Aluno(
+			nome,
+			idade,
+			cpf,
+			turmaSelecionada.GetNomeTurma().ToString(),
+			new List<double>()
+		);
 
-		//turmas.Add(new Turma(new char, nome));
+		alunos.Add(novoAluno);
 
-		alunos.Add(new Aluno(nome, idade, cpf, turma, new List<double>()));
+		turmaSelecionada.AdicionarAluno(novoAluno);
 
-        SalvarAlunos();
+		SalvarAlunos();
 
         AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
@@ -359,7 +355,14 @@ class Program
                 .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
         );
 
-        var confirmar = AnsiConsole.Prompt(
+		var turmaDoAluno = turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
+
+		if (turmaDoAluno != null)
+		{
+			turmaDoAluno.RemoverAluno(alunoSelecionado);
+		}
+
+		var confirmar = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("Tem certeza que deseja remover este aluno?")
                             .AddChoices(new[] {
@@ -462,7 +465,7 @@ class Program
 
         SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso!");
+        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
 	}
 
     //===================== LISTA ==========================================
@@ -596,7 +599,7 @@ class Program
 			{
 				case '1': AbrirNovaTurma(); break;
 				case '2': ListarTurmas(); break;
-				case '3': "Não"; break;
+				case '3': ListarTurmas(); break;
 			}
 
 			Console.ReadKey(true);
@@ -617,37 +620,45 @@ class Program
 			return;
 		}
 
-		turmas.Add(new Turma(nomeTurma, new List<string>()));
+		turmas.Add(new Turma(nomeTurma));
 
 		AnsiConsole.MarkupLine($"\n {check} [green] Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
 	}
 
 	static void ListarTurmas()
 	{
-
 		if (turmas.Count == 0)
 		{
 			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
 			return;
 		}
 
-		var tabela = new Table().Border(TableBorder.Rounded).Expand();
-		tabela.AddColumn("[blue]Turma[/]");
-		tabela.AddColumn("[blue]Média Acadêmica da Turma[/]");
+		var table = new Table();
 
-		for (int i = 0; i < turmas.Count; i++)
+		table.Border(TableBorder.Rounded);
+		table.AddColumn("[blue]Turma[/]");
+		table.AddColumn("[green]Qtd. Alunos[/]");
+		table.AddColumn("[yellow]Alunos[/]");
+
+		foreach (var turma in turmas)
 		{
-			tabela.AddRow(
-				turmas[i].GetNomeTurma(),
-				"N/D"
-				//$"[green]{turmas[i].GetCalcularMedia():F2}[/]"
+			var alunosDaTurma = turma.GetAlunos();
+
+			string listaAlunos = alunosDaTurma.Count > 0
+				? string.Join(", ", alunosDaTurma.Select(a => a.GetNome()))
+				: "[grey]Nenhum aluno[/]";
+
+			table.AddRow(
+				$"[bold]{turma.GetNomeTurma()}[/]",
+				alunosDaTurma.Count.ToString(),
+				listaAlunos
 			);
 		}
 
-		AnsiConsole.Write(tabela);
+		AnsiConsole.Write(table);
 	}
 
-		//===================== ESTATISTICAS GERAIS ======================================================
+	//===================== ESTATISTICAS GERAIS ======================================================
 
 	static void ExibirEstatisticas()
 	{
