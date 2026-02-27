@@ -4,8 +4,8 @@ using System.Text;
 
 class Turma
 {
-    private char NomeTurma;
-    private List<Aluno> alunos;
+    public char NomeTurma;
+    public List<Aluno> alunos;
 
     public Turma(char nomeTurma)
     {
