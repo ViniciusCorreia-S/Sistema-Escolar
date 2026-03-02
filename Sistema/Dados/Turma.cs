@@ -4,8 +4,8 @@ using System.Text;
 
 class Turma
 {
-    public string NomeTurma;
-    public List<Aluno> alunos;
+    public string NomeTurma { get; set; }
+    public List<Aluno> alunos { get; set; } = new List<Aluno>();
 
     public Turma(string nomeTurma)
     {

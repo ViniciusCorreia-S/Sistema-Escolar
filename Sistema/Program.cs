@@ -41,7 +41,14 @@ class Program
 
         string json = File.ReadAllText(nomeArquivoTurma);
 
-        return JsonSerializer.Deserialize<List<Turma>>(json) ?? new List<Turma>();
+        try
+        {
+            return JsonSerializer.Deserialize<List<Turma>>(json) ?? new List<Turma>();
+        }
+        catch
+        {
+            return new List<Turma>();
+        }
     }
 
     //===================== ALUNO =====================
@@ -59,7 +66,14 @@ class Program
 
         string json = File.ReadAllText(nomeArquivoAluno);
 
-        return JsonSerializer.Deserialize<List<Aluno>>(json) ?? new List<Aluno>();
+        try
+        {
+            return JsonSerializer.Deserialize<List<Aluno>>(json) ?? new List<Aluno>();
+        }
+        catch
+        {
+            return new List<Aluno>();
+        }
     }
 
     //===================== PROFESSORES =====================
@@ -77,7 +91,14 @@ class Program
 
         string json = File.ReadAllText(nomeArquivoProf);
 
-        return JsonSerializer.Deserialize<List<Professor>>(json) ?? new List<Professor>();
+        try
+        {
+            return JsonSerializer.Deserialize<List<Professor>>(json) ?? new List<Professor>();
+        }
+        catch
+        {
+            return new List<Professor>();
+        }
     }
 
     //CHECKMARK
@@ -121,7 +142,7 @@ class Program
             switch (opcao[0])
             {
                 case '1': MenuTurmas(); break;
-                case '2': MenuAlunos(); break;
+                case '2': AlunoService.MenuAlunos(); break;
                 case '3': MenuProfessores(); break;
                 case '4': ExibirEstatisticas(); break;
                 case '0': EncerrarSistema(); continuar = false; break;
@@ -140,411 +161,415 @@ class Program
         });
     }
 
-    //===================== MENU DE ALUNOS ======================================================
-    static void MenuAlunos()
-    {
-        while (true)
-        {
-            Console.Clear();
-            AnsiConsole.Write(new Rule("[bold green]GESTÃO DE ALUNOS[/]"));
-
-            var opcao = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Selecione uma ação:")
-                    .AddChoices(new[] {
-                    "1. Cadastrar Aluno",
-                    "2. Listar Alunos",
-                    "3. Detalhes do Aluno",
-                    "4. Adicionar Nota",
-                    "5. Remover Aluno",
-                    "0. Voltar"
-                }));
-
-            if (opcao.StartsWith("0")) break;
-
-            switch (opcao[0])
-            {
-                case '1': CadastrarAluno(); break;
-                case '2': ListarAlunos(); break;
-                case '3': ExibirDetalheAluno(); break;
-                case '4': AdicionarNota(); break;
-                case '5': RemoverAluno(); break;
-            }
-
-            AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
-            Console.ReadKey();
-        }
-    }
-
-    //===================== CADASTRO DE ALUNO ==========================================
-    static void CadastrarAluno()
-    {
-
-        if (turmas.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
-            return;
-        }
-
-        var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
-            .ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
-        var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Aluno:")
-            .ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
-            .Validate(cpf =>
-            {
-                if (cpf.Length != 11 || !Regex.IsMatch(cpf, @"^\d{11}$"))
-                    return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
-
-                //if (alunos.Any(a => a.CPF == cpf))
-                //    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
-                //    return;
-
-                return ValidationResult.Success();
-            })
-        );
-        var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade do Aluno:")
-            .ValidationErrorMessage("[red]Idade inválida[/]"));
-
-        var turmaSelecionada = AnsiConsole.Prompt(
-            new SelectionPrompt<Turma>()
-                .Title("Selecione a turma do [blue]aluno[/]:")
-                .AddChoices(turmas)
-                .UseConverter(t => $"Turma: {t.GetNomeTurma()}")
-        );
-
-        var novoAluno = new Aluno( nome, idade, cpf, turmaSelecionada.GetNomeTurma().ToString(), new List<double>());
-
-        alunos.Add(novoAluno);
-
-        turmaSelecionada.AdicionarAluno(novoAluno);
-
-        SalvarAlunos();
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
-    }
-
-    //===================== DETALHES DE ALUNO ==========================================
-    static void ExibirDetalheAluno()
-    {
-
-        if (alunos.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
-            return;
-        }
-
-        var alunoSelecionado = AnsiConsole.Prompt(
-            new SelectionPrompt<Aluno>()
-                .Title("Selecione o [blue]aluno[/] para ver detalhes:")
-                .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
-        );
-
-        string cpf = alunoSelecionado.GetCPF();
-        string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
-
-        var card = new Panel(new Markup(
-            $"[bold]CPF:[/] {cpfFormatado}\n" +
-            $"[bold]Idade:[/] {alunoSelecionado.GetIdade()} anos\n" +
-            $"[bold]Média Acadêmica:[/] [yellow]{alunoSelecionado.CalcularMedia():F2}[/]\n" +
-            $"[bold]Notas:[/] {string.Join(" | ", alunoSelecionado.GetNotas()) ?? "[red]N/D[/]":F2}"
-        ));
-
-        card.Header($"Ficha Cadastral: [bold]{alunoSelecionado.GetNome()}[/]");
-        card.BorderColor(Color.Blue);
-
-        AnsiConsole.Write(card);
-    }
-
-    //===================== LISTA DE ALUNO ==========================================
-    static void ListarAlunos()
-    {
-
-        if (alunos.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
-            return;
-        }
-
-        var tabela = new Table().Border(TableBorder.Rounded).Expand();
-        tabela.AddColumn("[blue]ID[/]");
-        tabela.AddColumn("[blue]Nome[/]");
-        tabela.AddColumn("[blue]Turma[/]");
-        tabela.AddColumn("[blue]Média[/]");
-
-        for (int i = 0; i < alunos.Count; i++)
-        {
-            tabela.AddRow(
-                (i + 1).ToString(),
-                alunos[i].GetNome() ?? "[red]N/A[/]",
-                alunos[i].GetTurma() ?? "[red]N/A[/]",
-                $"[green]{alunos[i].CalcularMedia():F2}[/]"
-            );
-        }
-
-        AnsiConsole.Write(tabela);
-    }
-
-    //===================== ADICIONAR NOTA ==========================================
-    static void AdicionarNota()
-    {
-
-        if (alunos.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
-            return;
-        }
-
-        ListarAlunos();
-
-        var alunoSelecionado = AnsiConsole.Prompt(
-            new SelectionPrompt<Aluno>()
-                .Title("Selecione o [blue]aluno[/] que receberar a nota:")
-                .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
-        );
-
-        double nota = AnsiConsole
-                        .Prompt(new TextPrompt<double>("Digite a [blue]nota[/] a ser adicionada (0 a 10): ")
-                            .ValidationErrorMessage("[red]Nota inválida (digite um número de 0 a 10)[/]")
-                            .Validate(notaNova => {
-                                if (notaNova >= 0 && notaNova <= 10)
-                                    return ValidationResult.Success();
-
-                                return ValidationResult.Error("[red]A nota deve ser um número de 0 a 10[/]");
-                            })
-                        );
-
-        alunoSelecionado.GetNotas().Add(nota);
-
-        SalvarAlunos();
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
-    }
-
-    //===================== REMOVER ==========================================
-    static void RemoverAluno()
-    {
-        if (alunos.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
-            return;
-        }
-
-        var alunoSelecionado = AnsiConsole.Prompt(
-            new SelectionPrompt<Aluno>()
-                .Title("Selecione o [blue]aluno[/] que sera removido:")
-                .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
-        );
-
-        var turmaDoAluno = turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
-
-        if (turmaDoAluno != null)
-        {
-            turmaDoAluno.RemoverAluno(alunoSelecionado);
-        }
-
-        var confirmar = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Tem certeza que deseja remover este aluno?")
-                            .AddChoices(new[] {
-                                 "1. Sim",
-                                 "0. Não"
-                            })
-                        );
-
-        if (confirmar.StartsWith("0"))
-            return;
-
-        alunos.Remove(alunoSelecionado);
-
-        SalvarAlunos();
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
-    }
-
-    //===================== MENU DE PROFESSORES ======================================================
-    static void MenuProfessores()
-    {
-        while (true)
-        {
-            Console.Clear();
-            AnsiConsole.Write(new Rule("[bold green]GESTÃO DE PROFESSORES[/]").RuleStyle("grey"));
-
-            var opcao = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Selecione uma ação:")
-                    .PageSize(10)
-                    .AddChoices(new[] {
-                    "1. Cadastrar Professor",
-                    "2. Listar Professores",
-                    "3. Atualizar Salário",
-                    "4. Remover Professor",
-                    "0. Voltar"
-                    }));
-
-            if (opcao.StartsWith("0")) break;
-
-            switch (opcao[0])
-            {
-                case '1': CadastrarProfessor(); break;
-                case '2': ListarProfessores(); break;
-                case '3': SalarioProfessor(); break;
-                case '4': RemoverProfessor(); break;
-            }
-
-            AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
-            Console.ReadKey(true);
-        }
-    }
-
-    //===================== CADASTRO PROFESSORES ==========================================
-    static void CadastrarProfessor()
-    {
-
-        var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Professor:")
-            .ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
-
-        var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Professor:")
-            .ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
-            .Validate(cpf =>
-            {
-                if (cpf.Length != 11)
-                    return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
-
-                if (!Regex.IsMatch(cpf, @"^\d{11}$"))
-                    return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
-
-                return ValidationResult.Success();
-            })
-        );
-        var idade = AnsiConsole.Prompt(
-            new TextPrompt<int>("Idade:")
-                .ValidationErrorMessage("[red]Por favor, insira uma idade válida.[/]")
-                .Validate(age => age >= 18 ? ValidationResult.Success() : ValidationResult.Error("[red]O professor deve ser maior de idade.[/]"))
-        );
-        var disciplina = AnsiConsole.Ask<string>("Disciplina/Matéria:");
-
-        Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
-        professores.Add(novoProfessor);
-
-        SalvarProfessores();
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
-    }
-
-    //===================== LISTA PROFESSORES ==========================================
-    static void ListarProfessores()
-    {
-        if (professores.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado no sistema.[/]");
-            return;
-        }
-
-        var tabela = new Table().Border(TableBorder.Rounded).Expand();
-        tabela.AddColumn("[blue]ID[/]");
-        tabela.AddColumn("[blue]Nome[/]");
-        tabela.AddColumn("[blue]CPF[/]");
-        tabela.AddColumn("[blue]Disciplina[/]");
-        tabela.AddColumn("[blue]Último Salário[/]");
-
-        for (int i = 0; i < professores.Count; i++)
-        {
-            var p = professores[i];
-            decimal ultimoSalario = p.GetSalarios().Count > 0 ? p.GetSalarios()[^1] : 0;
-
-            string cpf = p.GetCPF();
-            string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
-
-            tabela.AddRow(
-                (i + 1).ToString(),
-                p.GetNome(),
-                cpfFormatado,
-                $"[italic]{p.GetDisciplina()}[/]",
-                $"[green]{ultimoSalario}[/]"
-            );
-            Console.WriteLine(ultimoSalario);
-        }
-
-        AnsiConsole.Write(tabela);
-    }
-
-    //===================== SALARIO ==========================================
-    static void SalarioProfessor()
-    {
-        if (professores.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
-            return;
-        }
-
-        var prof = AnsiConsole.Prompt(
-            new SelectionPrompt<Professor>()
-                .Title("Atualizar salário de qual professor?")
-                .AddChoices(professores)
-                .UseConverter(p => p.GetNome())
-        );
-
-        var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
-                            .ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
-                            .Validate(salario =>
-                            {
-                                //var salarioString = salario.ToString();
-                                if (salario < 0)
-                                {
-                                    return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
-                                }
-
-                                return ValidationResult.Success();
-                            })
-                        );
-
-        AnsiConsole.Status()
-            .Start("Atualizando folha de pagamento...", ctx => {
-                Thread.Sleep(800);
-                prof.GetSalarios().Add(novoSalario);
-                SalvarProfessores();
-            });
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Salário atualizado com sucesso![/]");
-    }
-
-    //===================== REMOVER PROFESSORES ==========================================
-    static void RemoverProfessor()
-    {
-        if (professores.Count == 0)
-        {
-            AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
-            return;
-        }
-
-        var profSelecionado = AnsiConsole.Prompt(
-            new SelectionPrompt<Professor>()
-                .Title("Selecione o [blue]professor[/] que sera removido:")
-                .AddChoices(professores)
-                .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.GetDisciplina()}")
-        );
-
-        var confirmar = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Tem certeza que deseja remover este aluno?")
-                .AddChoices(new[] {
-                        "1. Sim",
-                        "0. Não"
-                })
-        );
-
-        if (confirmar.StartsWith("0"))
-            return;
-
-        professores.Remove(profSelecionado);
-
-        SalvarProfessores();
-
-        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
-    }
+    ////===================== MENU DE ALUNOS ======================================================
+    //static void MenuAlunos()
+    //{
+    //    while (true)
+    //    {
+    //        Console.Clear();
+    //        AnsiConsole.Write(new Rule("[bold green]GESTÃO DE ALUNOS[/]"));
+
+    //        var opcao = AnsiConsole.Prompt(
+    //            new SelectionPrompt<string>()
+    //                .Title("Selecione uma ação:")
+    //                .AddChoices(new[] {
+    //                "1. Cadastrar Aluno",
+    //                "2. Listar Alunos",
+    //                "3. Detalhes do Aluno",
+    //                "4. Adicionar Nota",
+    //                "5. Remover Aluno",
+    //                "0. Voltar"
+    //            }));
+
+    //        if (opcao.StartsWith("0")) break;
+
+    //        switch (opcao[0])
+    //        {
+    //            case '1': CadastrarAluno(); break;
+    //            case '2': ListarAlunos(); break;
+    //            case '3': ExibirDetalheAluno(); break;
+    //            case '4': AdicionarNota(); break;
+    //            case '5': RemoverAluno(); break;
+    //        }
+
+    //        AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+    //        Console.ReadKey();
+    //    }
+    //}
+
+    ////===================== CADASTRO DE ALUNO ==========================================
+    //static void CadastrarAluno()
+    //{
+
+    //    if (turmas.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
+    //        return;
+    //    }
+
+    //    var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Aluno:")
+    //        .ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
+    //    var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Aluno:")
+    //        .ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
+    //        .Validate(cpf =>
+    //        {
+    //            if (cpf.Length != 11 || !Regex.IsMatch(cpf, @"^\d{11}$"))
+    //                return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+    //            //if (alunos.Any(a => a.CPF == cpf))
+    //            //    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
+    //            //    return;
+
+    //            return ValidationResult.Success();
+    //        })
+    //    );
+    //    var idade = AnsiConsole.Prompt(new TextPrompt<int>("Idade do Aluno:")
+    //        .ValidationErrorMessage("[red]Idade inválida[/]"));
+
+    //    var turmaSelecionada = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Turma>()
+    //            .Title("Selecione a turma do [blue]aluno[/]:")
+    //            .AddChoices(turmas)
+    //            .UseConverter(t => $"Turma: {t.GetNomeTurma()}")
+    //    );
+
+    //    var novoAluno = new Aluno( nome, idade, cpf, turmaSelecionada.GetNomeTurma().ToString(), new List<double>());
+
+    //    alunos.Add(novoAluno);
+
+    //    turmaSelecionada.AdicionarAluno(novoAluno);
+
+    //    SalvarAlunos();
+    //    SalvarTurmas();
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+    //}
+
+    ////===================== DETALHES DE ALUNO ==========================================
+    //static void ExibirDetalheAluno()
+    //{
+
+    //    if (alunos.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    var alunoSelecionado = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Aluno>()
+    //            .Title("Selecione o [blue]aluno[/] para ver detalhes:")
+    //            .AddChoices(alunos)
+    //            .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+    //    );
+
+    //    string cpf = alunoSelecionado.GetCPF();
+    //    string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+
+    //    var card = new Panel(new Markup(
+    //        $"[bold]CPF:[/] {cpfFormatado}\n" +
+    //        $"[bold]Idade:[/] {alunoSelecionado.GetIdade()} anos\n" +
+    //        $"[bold]Média Acadêmica:[/] [yellow]{alunoSelecionado.CalcularMedia():F2}[/]\n" +
+    //        $"[bold]Notas:[/] {(alunoSelecionado.GetNotas().Count > 0
+    //            ? string.Join(" | ", alunoSelecionado.GetNotas().Select(n => n.ToString("F2")))
+    //            : "[red]N/D[/]")}"
+    //    ));
+
+    //    card.Header($"Ficha Cadastral: [bold]{alunoSelecionado.GetNome()}[/]");
+    //    card.BorderColor(Color.Blue);
+
+    //    AnsiConsole.Write(card);
+    //}
+
+    ////===================== LISTA DE ALUNO ==========================================
+    //static void ListarAlunos()
+    //{
+
+    //    if (alunos.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    var tabela = new Table().Border(TableBorder.Rounded).Expand();
+    //    tabela.AddColumn("[blue]ID[/]");
+    //    tabela.AddColumn("[blue]Nome[/]");
+    //    tabela.AddColumn("[blue]Turma[/]");
+    //    tabela.AddColumn("[blue]Média[/]");
+
+    //    for (int i = 0; i < alunos.Count; i++)
+    //    {
+    //        tabela.AddRow(
+    //            (i + 1).ToString(),
+    //            alunos[i].GetNome() ?? "[red]N/A[/]",
+    //            alunos[i].GetTurma() ?? "[red]N/A[/]",
+    //            $"[green]{alunos[i].CalcularMedia():F2}[/]"
+    //        );
+    //    }
+
+    //    AnsiConsole.Write(tabela);
+    //}
+
+    ////===================== ADICIONAR NOTA ==========================================
+    //static void AdicionarNota()
+    //{
+
+    //    if (alunos.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    ListarAlunos();
+
+    //    var alunoSelecionado = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Aluno>()
+    //            .Title("Selecione o [blue]aluno[/] que receberar a nota:")
+    //            .AddChoices(alunos)
+    //            .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+    //    );
+
+    //    double nota = AnsiConsole
+    //                    .Prompt(new TextPrompt<double>("Digite a [blue]nota[/] a ser adicionada (0 a 10): ")
+    //                        .ValidationErrorMessage("[red]Nota inválida (digite um número de 0 a 10)[/]")
+    //                        .Validate(notaNova => {
+    //                            if (notaNova >= 0 && notaNova <= 10)
+    //                                return ValidationResult.Success();
+
+    //                            return ValidationResult.Error("[red]A nota deve ser um número de 0 a 10[/]");
+    //                        })
+    //                    );
+
+    //    alunoSelecionado.GetNotas().Add(nota);
+
+    //    SalvarAlunos();
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
+    //}
+
+    ////===================== REMOVER ==========================================
+    //static void RemoverAluno()
+    //{
+    //    if (alunos.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    var alunoSelecionado = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Aluno>()
+    //            .Title("Selecione o [blue]aluno[/] que sera removido:")
+    //            .AddChoices(alunos)
+    //            .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
+    //    );
+
+    //    var turmaDoAluno = turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
+
+    //    if (turmaDoAluno != null)
+    //    {
+    //        turmaDoAluno.RemoverAluno(alunoSelecionado);
+    //    }
+
+    //    var confirmar = AnsiConsole.Prompt(
+    //                    new SelectionPrompt<string>()
+    //                        .Title("Tem certeza que deseja remover este aluno?")
+    //                        .AddChoices(new[] {
+    //                             "1. Sim",
+    //                             "0. Não"
+    //                        })
+    //                    );
+
+    //    if (confirmar.StartsWith("0"))
+    //        return;
+
+    //    alunos.Remove(alunoSelecionado);
+
+    //    SalvarAlunos();
+    //    SalvarTurmas();
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
+    //}
+
+    ////===================== MENU DE PROFESSORES ======================================================
+    //static void MenuProfessores()
+    //{
+    //    while (true)
+    //    {
+    //        Console.Clear();
+    //        AnsiConsole.Write(new Rule("[bold green]GESTÃO DE PROFESSORES[/]").RuleStyle("grey"));
+
+    //        var opcao = AnsiConsole.Prompt(
+    //            new SelectionPrompt<string>()
+    //                .Title("Selecione uma ação:")
+    //                .PageSize(10)
+    //                .AddChoices(new[] {
+    //                "1. Cadastrar Professor",
+    //                "2. Listar Professores",
+    //                "3. Atualizar Salário",
+    //                "4. Remover Professor",
+    //                "0. Voltar"
+    //                }));
+
+    //        if (opcao.StartsWith("0")) break;
+
+    //        switch (opcao[0])
+    //        {
+    //            case '1': CadastrarProfessor(); break;
+    //            case '2': ListarProfessores(); break;
+    //            case '3': SalarioProfessor(); break;
+    //            case '4': RemoverProfessor(); break;
+    //        }
+
+    //        AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
+    //        Console.ReadKey(true);
+    //    }
+    //}
+
+    ////===================== CADASTRO PROFESSORES ==========================================
+    //static void CadastrarProfessor()
+    //{
+
+    //    var nome = AnsiConsole.Prompt(new TextPrompt<string>("Nome do Professor:")
+    //        .ValidationErrorMessage("[red]Nome inválido (digite apenas letras)[/]"));
+
+    //    var cpf = AnsiConsole.Prompt(new TextPrompt<string>("CPF do Professor:")
+    //        .ValidationErrorMessage("[red]CPF inválido (digite apenas números)[/]")
+    //        .Validate(cpf =>
+    //        {
+    //            if (cpf.Length != 11)
+    //                return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+    //            if (!Regex.IsMatch(cpf, @"^\d{11}$"))
+    //                return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
+
+    //            return ValidationResult.Success();
+    //        })
+    //    );
+    //    var idade = AnsiConsole.Prompt(
+    //        new TextPrompt<int>("Idade:")
+    //            .ValidationErrorMessage("[red]Por favor, insira uma idade válida.[/]")
+    //            .Validate(age => age >= 18 ? ValidationResult.Success() : ValidationResult.Error("[red]O professor deve ser maior de idade.[/]"))
+    //    );
+    //    var disciplina = AnsiConsole.Ask<string>("Disciplina/Matéria:");
+
+    //    Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
+    //    professores.Add(novoProfessor);
+
+    //    SalvarProfessores();
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
+    //}
+
+    ////===================== LISTA PROFESSORES ==========================================
+    //static void ListarProfessores()
+    //{
+    //    if (professores.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado no sistema.[/]");
+    //        return;
+    //    }
+
+    //    var tabela = new Table().Border(TableBorder.Rounded).Expand();
+    //    tabela.AddColumn("[blue]ID[/]");
+    //    tabela.AddColumn("[blue]Nome[/]");
+    //    tabela.AddColumn("[blue]CPF[/]");
+    //    tabela.AddColumn("[blue]Disciplina[/]");
+    //    tabela.AddColumn("[blue]Último Salário[/]");
+
+    //    for (int i = 0; i < professores.Count; i++)
+    //    {
+    //        var p = professores[i];
+    //        decimal ultimoSalario = p.GetSalarios().Count > 0 ? p.GetSalarios()[^1] : 0;
+
+    //        string cpf = p.GetCPF();
+    //        string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+
+    //        tabela.AddRow(
+    //            (i + 1).ToString(),
+    //            p.GetNome(),
+    //            cpfFormatado,
+    //            $"[italic]{p.GetDisciplina()}[/]",
+    //            $"[green]{ultimoSalario}[/]"
+    //        );
+    //        Console.WriteLine(ultimoSalario);
+    //    }
+
+    //    AnsiConsole.Write(tabela);
+    //}
+
+    ////===================== SALARIO ==========================================
+    //static void SalarioProfessor()
+    //{
+    //    if (professores.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    var prof = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Professor>()
+    //            .Title("Atualizar salário de qual professor?")
+    //            .AddChoices(professores)
+    //            .UseConverter(p => p.GetNome())
+    //    );
+
+    //    var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
+    //                        .ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
+    //                        .Validate(salario =>
+    //                        {
+    //                            //var salarioString = salario.ToString();
+    //                            if (salario < 0)
+    //                            {
+    //                                return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
+    //                            }
+
+    //                            return ValidationResult.Success();
+    //                        })
+    //                    );
+
+    //    AnsiConsole.Status()
+    //        .Start("Atualizando folha de pagamento...", ctx => {
+    //            Thread.Sleep(800);
+    //            prof.GetSalarios().Add(novoSalario);
+    //            SalvarProfessores();
+    //        });
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Salário atualizado com sucesso![/]");
+    //}
+
+    ////===================== REMOVER PROFESSORES ==========================================
+    //static void RemoverProfessor()
+    //{
+    //    if (professores.Count == 0)
+    //    {
+    //        AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
+    //        return;
+    //    }
+
+    //    var profSelecionado = AnsiConsole.Prompt(
+    //        new SelectionPrompt<Professor>()
+    //            .Title("Selecione o [blue]professor[/] que sera removido:")
+    //            .AddChoices(professores)
+    //            .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.GetDisciplina()}")
+    //    );
+
+    //    var confirmar = AnsiConsole.Prompt(
+    //        new SelectionPrompt<string>()
+    //            .Title("Tem certeza que deseja remover este aluno?")
+    //            .AddChoices(new[] {
+    //                    "1. Sim",
+    //                    "0. Não"
+    //            })
+    //    );
+
+    //    if (confirmar.StartsWith("0"))
+    //        return;
+
+    //    professores.Remove(profSelecionado);
+
+    //    SalvarProfessores();
+
+    //    AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
+    //}
 
     //===================== MENU DE TURMAS ======================================================
     static void MenuTurmas()
