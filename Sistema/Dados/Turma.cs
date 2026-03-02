@@ -4,16 +4,16 @@ using System.Text;
 
 class Turma
 {
-    public char NomeTurma;
+    public string NomeTurma;
     public List<Aluno> alunos;
 
-    public Turma(char nomeTurma)
+    public Turma(string nomeTurma)
     {
         NomeTurma = nomeTurma;
         alunos = new List<Aluno>();
     }
 
-    public char GetNomeTurma()
+    public string GetNomeTurma()
     {
         return NomeTurma;
     }
