@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-class Professor : Pessoa
+public class Professor : Pessoa
 {
     public string Disciplina { get; set; } = string.Empty;
     public List<decimal> Salarios { get; set; } = new List<decimal>();

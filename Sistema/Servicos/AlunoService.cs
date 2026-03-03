@@ -3,11 +3,44 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Spectre.Console;
+using System.Text.Json;
 
 public static class AlunoService
 {
-    //===================== MENU DE ALUNOS ======================================================
-    public static void MenuAlunos()
+
+	//===================== ARQUIVO DE DADOS =====================
+	static string nomeArquivoAluno = "alunos.json";
+
+	//===================== LISTA DE DADOS =====================
+	public static List<Aluno> alunos = CarregarAlunos();
+
+	//===================== PERSISTÊNCIA ALUNO =====================
+	static void SalvarAlunos()
+	{
+		var options = new JsonSerializerOptions { WriteIndented = true };
+		string json = JsonSerializer.Serialize(alunos, options);
+		File.WriteAllText(nomeArquivoAluno, json);
+	}
+
+	static List<Aluno> CarregarAlunos()
+	{
+		if (!File.Exists(nomeArquivoAluno))
+			return new List<Aluno>();
+
+		string json = File.ReadAllText(nomeArquivoAluno);
+
+		try
+		{
+			return JsonSerializer.Deserialize<List<Aluno>>(json) ?? new List<Aluno>();
+		}
+		catch
+		{
+			return new List<Aluno>();
+		}
+	}
+
+	//===================== MENU DE ALUNOS ======================================================
+	public static void MenuAlunos()
     {
         while (true)
         {
@@ -46,7 +79,7 @@ public static class AlunoService
     static void CadastrarAluno()
     {
 
-        if (turmas.Count == 0)
+        if (TurmaService.turmas.Count == 0)
         {
             AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
             return;
@@ -74,7 +107,7 @@ public static class AlunoService
         var turmaSelecionada = AnsiConsole.Prompt(
             new SelectionPrompt<Turma>()
                 .Title("Selecione a turma do [blue]aluno[/]:")
-                .AddChoices(turmas)
+                .AddChoices(TurmaService.turmas)
                 .UseConverter(t => $"Turma: {t.GetNomeTurma()}")
         );
 
@@ -85,9 +118,9 @@ public static class AlunoService
         turmaSelecionada.AdicionarAluno(novoAluno);
 
         SalvarAlunos();
-        SalvarTurmas();
+        TurmaService.SalvarTurmas();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
     }
 
     //===================== DETALHES DE ALUNO ==========================================
@@ -188,7 +221,7 @@ public static class AlunoService
 
         SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
+        AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
     }
 
     //===================== REMOVER ==========================================
@@ -207,7 +240,7 @@ public static class AlunoService
                 .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
         );
 
-        var turmaDoAluno = turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
+        var turmaDoAluno = TurmaService.turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
 
         if (turmaDoAluno != null)
         {
@@ -229,8 +262,8 @@ public static class AlunoService
         alunos.Remove(alunoSelecionado);
 
         SalvarAlunos();
-        SalvarTurmas();
+        TurmaService.SalvarTurmas();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
     }
 }

@@ -1,0 +1,128 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using Spectre.Console;
+using System.Text.Json;
+
+public static class TurmaService
+{
+
+	//===================== ARQUIVO DE DADOS =====================
+	static string nomeArquivoTurma = "turmas.json";
+
+	//===================== LISTA DE DADOS =====================
+	public static List<Turma> turmas = CarregarTurmas();
+
+	//===================== PERSISTÊNCIA TURMAS =====================
+	public static void SalvarTurmas()
+	{
+		var options = new JsonSerializerOptions { WriteIndented = true };
+		string json = JsonSerializer.Serialize(turmas, options);
+		File.WriteAllText(nomeArquivoTurma, json);
+	}
+
+	static List<Turma> CarregarTurmas()
+	{
+		if (!File.Exists(nomeArquivoTurma))
+			return new List<Turma>();
+
+		string json = File.ReadAllText(nomeArquivoTurma);
+
+		try
+		{
+			return JsonSerializer.Deserialize<List<Turma>>(json) ?? new List<Turma>();
+		}
+		catch
+		{
+			return new List<Turma>();
+		}
+	}
+
+	//===================== MENU DE TURMAS ======================================================
+	public static void MenuTurmas()
+	{
+		while (true)
+		{
+			Console.Clear();
+
+			var opcao = AnsiConsole.Prompt(
+				new SelectionPrompt<string>()
+					.Title("Selecione uma ação:")
+					.PageSize(10)
+					.AddChoices(new[] {
+					"1. Abrir Nova Turma",
+					"2. Turmas Abertas",
+					//"3. Fechar Turma",
+					"0. Voltar"
+					}));
+
+			if (opcao.StartsWith("0")) break;
+
+			switch (opcao[0])
+			{
+				case '1': AbrirNovaTurma(); break;
+				case '2': ListarTurmas(); break;
+					//case '3': ListarTurmas(); break;
+			}
+
+			AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
+			Console.ReadKey();
+		}
+	}
+
+	//===================== ABRIR TURMAS ==========================================
+	static void AbrirNovaTurma()
+	{
+		var nomeTurma = AnsiConsole.Prompt(new TextPrompt<string>("Escolha um nome para a nova turma:")
+							.ValidationErrorMessage("[red]Nome inválido.[/]")
+						);
+
+		bool turmaExiste = turmas.Any(t => t.GetNomeTurma() == nomeTurma);
+
+		if (turmaExiste)
+		{
+			AnsiConsole.MarkupLine($"\n[red]Já existe uma turma com o nome [bold]{nomeTurma}[/]![/]");
+			return;
+		}
+
+		turmas.Add(new Turma(nomeTurma));
+
+		SalvarTurmas();
+
+		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
+	}
+
+	//===================== LISTA TURMAS ==========================================
+	static void ListarTurmas()
+	{
+		if (turmas.Count == 0)
+		{
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
+			return;
+		}
+
+		var table = new Table();
+
+		table.Border(TableBorder.Rounded).Expand();
+		table.AddColumn("[blue]Turma[/]");
+		table.AddColumn("[green]Qtd. Alunos[/]");
+		table.AddColumn("[yellow]Alunos[/]");
+
+		foreach (var turma in turmas)
+		{
+			var alunosDaTurma = turma.GetAlunos();
+
+			string listaAlunos = alunosDaTurma.Count > 0
+				? string.Join(", ", alunosDaTurma.Select(a => a.GetNome()))
+				: "[grey]Nenhum aluno[/]";
+
+			table.AddRow(
+				$"[bold]{turma.GetNomeTurma()}[/]",
+				alunosDaTurma.Count.ToString(),
+				listaAlunos
+			);
+		}
+		AnsiConsole.Write(table);
+	}
+}

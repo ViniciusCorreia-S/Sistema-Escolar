@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-class Aluno : Pessoa
+public class Aluno : Pessoa
 {
     public string Turma { get; set; } = string.Empty;
     public List<double> Notas { get; set; } = new List<double>();

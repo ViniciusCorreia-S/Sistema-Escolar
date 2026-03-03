@@ -3,12 +3,45 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Spectre.Console;
+using System.Text.Json;
 
 
 public static class ProfessorService
 {
-    //===================== MENU DE PROFESSORES ======================================================
-    public static void MenuProfessores()
+
+	//===================== ARQUIVO DE DADOS =====================
+	static string nomeArquivoProf = "professores.json";
+
+	//===================== LISTA DE DADOS =====================
+	public static List<Professor> professores = CarregarProfessores();
+
+	//===================== PERSISTÊNCIA PROFESSORES =====================
+	static void SalvarProfessores()
+	{
+		var options = new JsonSerializerOptions { WriteIndented = true };
+		string json = JsonSerializer.Serialize(professores, options);
+		File.WriteAllText(nomeArquivoProf, json);
+	}
+
+	static List<Professor> CarregarProfessores()
+	{
+		if (!File.Exists(nomeArquivoProf))
+			return new List<Professor>();
+
+		string json = File.ReadAllText(nomeArquivoProf);
+
+		try
+		{
+			return JsonSerializer.Deserialize<List<Professor>>(json) ?? new List<Professor>();
+		}
+		catch
+		{
+			return new List<Professor>();
+		}
+	}
+
+	//===================== MENU DE PROFESSORES ======================================================
+	public static void MenuProfessores()
     {
         while (true)
         {
@@ -74,7 +107,7 @@ public static class ProfessorService
 
         SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
     }
 
     //===================== LISTA PROFESSORES ==========================================
@@ -151,7 +184,7 @@ public static class ProfessorService
                 SalvarProfessores();
             });
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Salário atualizado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Salário atualizado com sucesso![/]");
     }
 
     //===================== REMOVER PROFESSORES ==========================================
@@ -186,6 +219,6 @@ public static class ProfessorService
 
         SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n {check} [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
     }
 }

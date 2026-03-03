@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-abstract class Pessoa
+public class Pessoa
 {
     public string Nome { get; set; } = string.Empty;
     public int Idade { get; set; }
