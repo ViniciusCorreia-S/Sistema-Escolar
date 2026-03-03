@@ -7,9 +7,7 @@ using System.Text.Json;
 
 //MELHORIAS FUTURAS:
 // - opcao de voltar em salario
-// - opção de fechar turma (remover da lista de turmas abertas)
 // - opção de remover nota
-// - corrigir erro na permanencia de todos os dados (alunos, turmas e professores)
 
 class Program
 {

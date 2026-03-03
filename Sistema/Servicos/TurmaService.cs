@@ -53,7 +53,7 @@ public static class TurmaService
 					.AddChoices(new[] {
 					"1. Abrir Nova Turma",
 					"2. Turmas Abertas",
-					//"3. Fechar Turma",
+					"3. Fechar Turma",
 					"0. Voltar"
 					}));
 
@@ -63,7 +63,7 @@ public static class TurmaService
 			{
 				case '1': AbrirNovaTurma(); break;
 				case '2': ListarTurmas(); break;
-					//case '3': ListarTurmas(); break;
+				case '3': FecharTurmas(); break;
 			}
 
 			AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");
@@ -125,4 +125,38 @@ public static class TurmaService
 		}
 		AnsiConsole.Write(table);
 	}
+
+    //===================== LISTA TURMAS ==========================================
+    static void FecharTurmas()
+	{
+		if (turmas.Count == 0)
+		{
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
+			return;
+		}
+
+        var TurmaSelecionada = AnsiConsole.Prompt(
+            new SelectionPrompt<Turma>()
+                .Title("Selecione a [blue]turma[/] que sera removida:")
+                .AddChoices(turmas)
+                .UseConverter(t => $"Turma: {t.GetNomeTurma()} | Qtd. Alunos: {t.GetAlunos().Count.ToString()}")
+        );
+
+        var confirmar = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Tem certeza que deseja remover esta turma?")
+                .AddChoices(new[] {
+                        "1. Sim",
+                        "0. Não"
+                })
+        );
+
+        if (confirmar.StartsWith("0"))
+            return;
+
+        turmas.Remove(TurmaSelecionada);
+		SalvarTurmas();
+
+		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.GetNomeTurma()}[/] fechada com sucesso![/]");
+    }
 }

@@ -156,6 +156,7 @@ public static class ProfessorService
             return;
         }
 
+
         var prof = AnsiConsole.Prompt(
             new SelectionPrompt<Professor>()
                 .Title("Atualizar salário de qual professor?")
@@ -163,19 +164,26 @@ public static class ProfessorService
                 .UseConverter(p => p.GetNome())
         );
 
-        var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
-                            .ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
-                            .Validate(salario =>
-                            {
-                                //var salarioString = salario.ToString();
-                                if (salario < 0)
-                                {
-                                    return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
-                                }
+        var grid = new Grid().AddColumns(2);
 
-                                return ValidationResult.Success();
-                            })
-                        );
+        var salarioAtual = prof.GetSalarios().Count > 0 ? prof.GetSalarios()[^1] : 0;
+        grid.AddRow( new Panel($"Salário atual: [green]{salarioAtual}[/]"));
+        AnsiConsole.Write(grid);
+        
+        
+        var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"\n Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
+            .ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
+            .Validate(salario =>
+            {
+                               
+                if (salario < 0)
+                {
+                    return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
+                }
+
+                return ValidationResult.Success();
+            })
+        );
 
         AnsiConsole.Status()
             .Start("Atualizando folha de pagamento...", ctx => {
@@ -205,7 +213,7 @@ public static class ProfessorService
 
         var confirmar = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Tem certeza que deseja remover este aluno?")
+                .Title("Tem certeza que deseja remover este professor?")
                 .AddChoices(new[] {
                         "1. Sim",
                         "0. Não"

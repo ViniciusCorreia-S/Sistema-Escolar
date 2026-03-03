@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-public class Pessoa
+public abstract class Pessoa
 {
     public string Nome { get; set; } = string.Empty;
     public int Idade { get; set; }
     public string CPF { get; set; } = string.Empty;
 
-	public Pessoa() { }
+    public Pessoa() { }
 
     public Pessoa(string nome, int idade, string cpf)
     {
