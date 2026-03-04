@@ -8,6 +8,7 @@ using System.Text.Json;
 //MELHORIAS FUTURAS:
 // - opcao de voltar em salario
 // - opção de remover nota
+// - adicionar sistema de boletim
 
 class Program
 {
@@ -26,8 +27,8 @@ class Program
                 .Border(BoxBorder.Double)
                 .Expand();
 
-            var data = DateTime.Now.ToString("Iniciado: dd/MM/yyyy HH:mm:ss");
-            var relogio = new Panel( new Align( new Markup($"[yellow]{data}[/]"), HorizontalAlignment.Right));
+            var data = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            var relogio = new Panel( new Align( new Markup($"[yellow]Iniciado: {data}[/]"), HorizontalAlignment.Right));
 
             AnsiConsole.Write(header);
             AnsiConsole.Write(relogio);

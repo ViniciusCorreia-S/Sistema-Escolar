@@ -54,7 +54,7 @@ public static class AlunoService
                         "1. Cadastrar Aluno",
                         "2. Listar Alunos",
                         "3. Detalhes do Aluno",
-                        "4. Adicionar Nota",
+                        "4. Atualizar Nota",
                         "5. Remover Aluno",
                         "0. Voltar"
                 }));
@@ -66,7 +66,7 @@ public static class AlunoService
                 case '1': CadastrarAluno(); break;
                 case '2': ListarAlunos(); break;
                 case '3': ExibirDetalheAluno(); break;
-                case '4': AdicionarNota(); break;
+                case '4': AtualizarNota(); break;
                 case '5': RemoverAluno(); break;
             }
 
@@ -176,11 +176,13 @@ public static class AlunoService
 
         for (int i = 0; i < alunos.Count; i++)
         {
+            var CorNota = alunos[i].CalcularMedia() > 6 ? "[green]" : "[red]";
+
             tabela.AddRow(
                 (i + 1).ToString(),
                 alunos[i].GetNome() ?? "[red]N/A[/]",
                 alunos[i].GetTurma() ?? "[red]N/A[/]",
-                $"[green]{alunos[i].CalcularMedia():F2}[/]"
+                $"{CorNota}{alunos[i].CalcularMedia():F2}[/]"
             );
         }
 
@@ -188,14 +190,41 @@ public static class AlunoService
     }
 
     //===================== ADICIONAR NOTA ==========================================
-    static void AdicionarNota()
+    static void AtualizarNota()
     {
+        Console.Clear();
 
         if (alunos.Count == 0)
         {
             AnsiConsole.MarkupLine("\n[yellow]! Nenhum aluno cadastrado.[/]");
             return;
         }
+
+        while (alunos.Count > 0)
+        {
+
+            var opcao = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Selecione um opção:")
+                    .AddChoices(new[] {
+                            "1. Adicionar Nota",
+                            "2. Remover Nota",
+                            "0. Voltar"
+                    })
+            );
+
+            if (opcao.StartsWith("0")) break;
+
+            switch (opcao[0])
+            {
+                case '1': AdicionarNota(); break;
+                case '2': RemoverNota(); break;
+            }
+        }
+    }
+
+    static void AdicionarNota()
+    {
 
         ListarAlunos();
 
@@ -224,6 +253,30 @@ public static class AlunoService
         AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
     }
 
+    static void RemoverNota()
+    {
+        ListarAlunos();
+
+        //var alunoSelecionado = AnsiConsole.Prompt(
+        //    new SelectionPrompt<Aluno>()
+        //        .Title("Selecione o [blue]aluno[/] que deseja remover a nota:")
+        //        .AddChoices(alunos)
+        //        .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+        //);
+
+        //var NotaSelecionada = AnsiConsole.Prompt(
+        //    new SelectionPrompt<alunoSelecionado>()
+        //        .Title("Selecione a [blue]nota[/] que sera removida:")
+        //        .AddChoices(alunoSelecionado.GetNotas())
+        //);
+
+        //alunoSelecionado.GetNotas().Remove(NotaSelecionada);
+
+        //SalvarAlunos();
+
+        //AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} removida com sucesso ![/]");
+    }
+
     //===================== REMOVER ==========================================
     static void RemoverAluno()
     {
@@ -248,13 +301,13 @@ public static class AlunoService
         }
 
         var confirmar = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Tem certeza que deseja remover este aluno?")
-                            .AddChoices(new[] {
-                                     "1. Sim",
-                                     "0. Não"
-                            })
-                        );
+            new SelectionPrompt<string>()
+                .Title("Tem certeza que deseja remover este aluno?")
+                .AddChoices(new[] {
+                            "1. Sim",
+                            "0. Não"
+                })
+        );
 
         if (confirmar.StartsWith("0"))
             return;
