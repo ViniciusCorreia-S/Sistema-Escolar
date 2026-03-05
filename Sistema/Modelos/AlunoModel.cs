@@ -1,29 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 public class Aluno : Pessoa
 {
-    public string Turma { get; set; } = string.Empty;
-    public List<double> Notas { get; set; } = new List<double>();
+    public string Turma { get; private set; } = string.Empty;
+    
+    private List<double> notas = new List<double>();
+    public IReadOnlyList<double> Notas => notas;
 
     public Aluno() { }
 
-    public Aluno(string nome, int idade, string cpf, string turma,
-        List<double> notas) 
+    public Aluno(string nome, int idade, string cpf, string turma) 
         : base(nome, idade, cpf)
     {
         Turma = turma;
-        Notas = notas;
     }
 
     public string GetTurma()
     {
         return Turma;
     }
-    public List<double> GetNotas()
+
+    public void AdicionarNota(double nota)
     {
-        return Notas;
+        notas.Add(nota);
     }
 
     public double CalcularMedia()

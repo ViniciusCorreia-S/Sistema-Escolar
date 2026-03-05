@@ -8,36 +8,9 @@ using System.Text.Json;
 public static class AlunoService
 {
 
-	//===================== ARQUIVO DE DADOS =====================
-	static string nomeArquivoAluno = "alunos.json";
-
-	//===================== LISTA DE DADOS =====================
-	public static List<Aluno> alunos = CarregarAlunos();
-
-	//===================== PERSISTÊNCIA ALUNO =====================
-	static void SalvarAlunos()
-	{
-		var options = new JsonSerializerOptions { WriteIndented = true };
-		string json = JsonSerializer.Serialize(alunos, options);
-		File.WriteAllText(nomeArquivoAluno, json);
-	}
-
-	static List<Aluno> CarregarAlunos()
-	{
-		if (!File.Exists(nomeArquivoAluno))
-			return new List<Aluno>();
-
-		string json = File.ReadAllText(nomeArquivoAluno);
-
-		try
-		{
-			return JsonSerializer.Deserialize<List<Aluno>>(json) ?? new List<Aluno>();
-		}
-		catch
-		{
-			return new List<Aluno>();
-		}
-	}
+    //===================== LISTA DE DADOS =====================
+    private static List<Aluno> alunos = AlunosRepository.CarregarAlunos();
+    public static IReadOnlyList<Aluno> Alunos => alunos;
 
 	//===================== MENU DE ALUNOS ======================================================
 	public static void MenuAlunos()
@@ -107,18 +80,18 @@ public static class AlunoService
         var turmaSelecionada = AnsiConsole.Prompt(
             new SelectionPrompt<Turma>()
                 .Title("Selecione a turma do [blue]aluno[/]:")
-                .AddChoices(TurmaService.turmas)
+                .AddChoices(TurmaService.Turmas)
                 .UseConverter(t => $"Turma: {t.GetNomeTurma()}")
         );
 
-        var novoAluno = new Aluno(nome, idade, cpf, turmaSelecionada.GetNomeTurma().ToString(), new List<double>());
+        var novoAluno = new Aluno(nome, idade, cpf, turmaSelecionada.GetNomeTurma().ToString());
 
         alunos.Add(novoAluno);
 
         turmaSelecionada.AdicionarAluno(novoAluno);
 
-        SalvarAlunos();
-        TurmaService.SalvarTurmas();
+        AlunosRepository.SalvarAlunos();
+        TurmasRepository.SalvarTurmas();
 
         AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
     }
@@ -147,8 +120,8 @@ public static class AlunoService
             $"[bold]CPF:[/] {cpfFormatado}\n" +
             $"[bold]Idade:[/] {alunoSelecionado.GetIdade()} anos\n" +
             $"[bold]Média Acadêmica:[/] [yellow]{alunoSelecionado.CalcularMedia():F2}[/]\n" +
-            $"[bold]Notas:[/] {(alunoSelecionado.GetNotas().Count > 0
-                ? string.Join(" | ", alunoSelecionado.GetNotas().Select(n => n.ToString("F2")))
+            $"[bold]Notas:[/] {(alunoSelecionado.Notas.Count > 0
+                ? string.Join(" | ", alunoSelecionado.Notas.Select(n => n.ToString("F2")))
                 : "[red]N/D[/]")}"
         ));
 
@@ -238,17 +211,18 @@ public static class AlunoService
         double nota = AnsiConsole
                         .Prompt(new TextPrompt<double>("Digite a [blue]nota[/] a ser adicionada (0 a 10): ")
                             .ValidationErrorMessage("[red]Nota inválida (digite um número de 0 a 10)[/]")
-                            .Validate(notaNova => {
-                                if (notaNova >= 0 && notaNova <= 10)
-                                    return ValidationResult.Success();
+                        .Validate(notaNova =>
+                        {
+                            if (notaNova >= 0 && notaNova <= 10)
+                                return ValidationResult.Success();
 
-                                return ValidationResult.Error("[red]A nota deve ser um número de 0 a 10[/]");
-                            })
+                            return ValidationResult.Error("[red]A nota deve ser um número de 0 a 10[/]");
+                        })
                         );
 
-        alunoSelecionado.GetNotas().Add(nota);
+        alunoSelecionado.AdicionarNota(nota);
 
-        SalvarAlunos();
+        AlunosRepository.SalvarAlunos();
 
         AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
     }
@@ -267,16 +241,16 @@ public static class AlunoService
         //var NotaSelecionada = AnsiConsole.Prompt(
         //    new SelectionPrompt<alunoSelecionado>()
         //        .Title("Selecione a [blue]nota[/] que sera removida:")
-        //        .AddChoices(alunoSelecionado.GetNotas())
+        //        .AddChoices(alunoSelecionado.Notas)
         //);
 
-        //alunoSelecionado.GetNotas().Remove(NotaSelecionada);
+        //alunoSelecionado.Notas.Remove(NotaSelecionada);
 
         //SalvarAlunos();
 
         //AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} removida com sucesso ![/]");
     }
-
+    
     //===================== REMOVER ==========================================
     static void RemoverAluno()
     {
@@ -314,7 +288,7 @@ public static class AlunoService
 
         alunos.Remove(alunoSelecionado);
 
-        SalvarAlunos();
+        AlunosRepository.SalvarAlunos();
         TurmaService.SalvarTurmas();
 
         AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");

@@ -21,12 +21,12 @@ public static class EstatisticaService
 		var table = new Table().Border(TableBorder.Rounded).Expand();
 		table.AddColumn("Tipo").AddColumn("Total");
 		table.AddRow("Turmas", $"[blue]{TurmaService.turmas.Count}[/]");
-		table.AddRow("Alunos", $"[blue]{AlunoService.alunos.Count}[/]");
+		table.AddRow("Alunos", $"[blue]{AlunoService.Alunos.Count}[/]");
 		table.AddRow("Professores", $"[green]{ProfessorService.professores.Count}[/]");
 
-		if (AlunoService.alunos.Count > 0)
+		if (AlunoService.Alunos.Count > 0)
 		{
-			double media = AlunoService.alunos.Average(a => a.CalcularMedia());
+			double media = AlunoService.Alunos.Average(a => a.CalcularMedia());
 			grid.AddRow(table, new Panel($"[bold]Média Acadêmica:[/] {media:F2}").Expand());
 		}
 		else

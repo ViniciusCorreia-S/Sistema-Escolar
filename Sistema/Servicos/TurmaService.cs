@@ -8,39 +8,12 @@ using System.Text.Json;
 public static class TurmaService
 {
 
-	//===================== ARQUIVO DE DADOS =====================
-	static string nomeArquivoTurma = "turmas.json";
-
 	//===================== LISTA DE DADOS =====================
-	public static List<Turma> turmas = CarregarTurmas();
+    private static List<Turma> turmas = TurmassRepository.CarregarAlunos();
+    public static IReadOnlyList<Turma> Turmas => turmas;
 
-	//===================== PERSISTÊNCIA TURMAS =====================
-	public static void SalvarTurmas()
-	{
-		var options = new JsonSerializerOptions { WriteIndented = true };
-		string json = JsonSerializer.Serialize(turmas, options);
-		File.WriteAllText(nomeArquivoTurma, json);
-	}
-
-	static List<Turma> CarregarTurmas()
-	{
-		if (!File.Exists(nomeArquivoTurma))
-			return new List<Turma>();
-
-		string json = File.ReadAllText(nomeArquivoTurma);
-
-		try
-		{
-			return JsonSerializer.Deserialize<List<Turma>>(json) ?? new List<Turma>();
-		}
-		catch
-		{
-			return new List<Turma>();
-		}
-	}
-
-	//===================== MENU DE TURMAS ======================================================
-	public static void MenuTurmas()
+    //===================== MENU DE TURMAS ======================================================
+    public static void MenuTurmas()
 	{
 		while (true)
 		{
@@ -78,7 +51,7 @@ public static class TurmaService
 							.ValidationErrorMessage("[red]Nome inválido.[/]")
 						);
 
-		bool turmaExiste = turmas.Any(t => t.GetNomeTurma() == nomeTurma);
+		bool turmaExiste = turmas.Any(t => t.NomeTurma == nomeTurma);
 
 		if (turmaExiste)
 		{
@@ -111,14 +84,14 @@ public static class TurmaService
 
 		foreach (var turma in turmas)
 		{
-			var alunosDaTurma = turma.GetAlunos();
+			var alunosDaTurma = turma.Alunos;
 
 			string listaAlunos = alunosDaTurma.Count > 0
 				? string.Join(", ", alunosDaTurma.Select(a => a.GetNome()))
 				: "[grey]Nenhum aluno[/]";
 
 			table.AddRow(
-				$"[bold]{turma.GetNomeTurma()}[/]",
+				$"[bold]{turma.NomeTurma}[/]",
 				alunosDaTurma.Count.ToString(),
 				listaAlunos
 			);
@@ -139,7 +112,7 @@ public static class TurmaService
             new SelectionPrompt<Turma>()
                 .Title("Selecione a [blue]turma[/] que sera removida:")
                 .AddChoices(turmas)
-                .UseConverter(t => $"Turma: {t.GetNomeTurma()} | Qtd. Alunos: {t.GetAlunos().Count.ToString()}")
+                .UseConverter(t => $"Turma: {t.NomeTurma} | Qtd. Alunos: {t.Alunos.Count.ToString()}")
         );
 
         var confirmar = AnsiConsole.Prompt(
@@ -157,6 +130,6 @@ public static class TurmaService
         turmas.Remove(TurmaSelecionada);
 		SalvarTurmas();
 
-		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.GetNomeTurma()}[/] fechada com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.NomeTurma}[/] fechada com sucesso![/]");
     }
 }

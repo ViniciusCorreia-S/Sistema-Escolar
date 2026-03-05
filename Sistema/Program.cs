@@ -28,7 +28,7 @@ class Program
                 .Expand();
 
             var data = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-            var relogio = new Panel( new Align( new Markup($"[yellow]Iniciado: {data}[/]"), HorizontalAlignment.Right));
+            var relogio = new Panel( new Align( new Markup($"[yellow]{data}[/]"), HorizontalAlignment.Right));
 
             AnsiConsole.Write(header);
             AnsiConsole.Write(relogio);
