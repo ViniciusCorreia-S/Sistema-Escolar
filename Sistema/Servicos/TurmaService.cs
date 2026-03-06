@@ -9,7 +9,7 @@ public static class TurmaService
 {
 
 	//===================== LISTA DE DADOS =====================
-    private static List<Turma> turmas = TurmassRepository.CarregarAlunos();
+    private static List<Turma> turmas = TurmasRepository.CarregarTurmas();
     public static IReadOnlyList<Turma> Turmas => turmas;
 
     //===================== MENU DE TURMAS ======================================================
@@ -18,8 +18,9 @@ public static class TurmaService
 		while (true)
 		{
 			Console.Clear();
+            AnsiConsole.Write(new Rule("[bold green]GESTÃO DE TURMAS[/]"));
 
-			var opcao = AnsiConsole.Prompt(
+            var opcao = AnsiConsole.Prompt(
 				new SelectionPrompt<string>()
 					.Title("Selecione uma ação:")
 					.PageSize(10)
@@ -61,7 +62,7 @@ public static class TurmaService
 
 		turmas.Add(new Turma(nomeTurma));
 
-		SalvarTurmas();
+		TurmasRepository.SalvarTurmas();
 
 		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
 	}
@@ -128,7 +129,7 @@ public static class TurmaService
             return;
 
         turmas.Remove(TurmaSelecionada);
-		SalvarTurmas();
+		TurmasRepository.SalvarTurmas();
 
 		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.NomeTurma}[/] fechada com sucesso![/]");
     }

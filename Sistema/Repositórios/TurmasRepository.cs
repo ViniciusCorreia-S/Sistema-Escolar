@@ -2,7 +2,7 @@
 using Spectre.Console;
 using System.Text.Json;
 
-public class TurmasRepository
+public static class TurmasRepository
 {
     //===================== ARQUIVO DE DADOS =====================
     static string nomeArquivoTurma = "turmas.json";
@@ -15,7 +15,7 @@ public class TurmasRepository
         File.WriteAllText(nomeArquivoTurma, json);
     }
 
-    static List<Turma> CarregarTurmas()
+    public static List<Turma> CarregarTurmas()
     {
         if (!File.Exists(nomeArquivoTurma))
             return new List<Turma>();

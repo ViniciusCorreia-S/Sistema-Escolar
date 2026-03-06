@@ -4,7 +4,7 @@ public class Aluno : Pessoa
 {
     public string Turma { get; private set; } = string.Empty;
     
-    private List<double> notas = new List<double>();
+    private List<double> notas = new();
     public IReadOnlyList<double> Notas => notas;
 
     public Aluno() { }
@@ -15,14 +15,14 @@ public class Aluno : Pessoa
         Turma = turma;
     }
 
-    public string GetTurma()
-    {
-        return Turma;
-    }
-
     public void AdicionarNota(double nota)
     {
         notas.Add(nota);
+    }
+
+    public void RemoverNota(double nota)
+    {
+        notas.Remove(nota);
     }
 
     public double CalcularMedia()

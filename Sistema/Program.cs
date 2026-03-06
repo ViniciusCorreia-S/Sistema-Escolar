@@ -27,7 +27,7 @@ class Program
                 .Border(BoxBorder.Double)
                 .Expand();
 
-            var data = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+            var data = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
             var relogio = new Panel( new Align( new Markup($"[yellow]{data}[/]"), HorizontalAlignment.Right));
 
             AnsiConsole.Write(header);

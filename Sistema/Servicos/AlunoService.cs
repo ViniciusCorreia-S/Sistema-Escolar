@@ -52,7 +52,7 @@ public static class AlunoService
     static void CadastrarAluno()
     {
 
-        if (TurmaService.turmas.Count == 0)
+        if (TurmaService.Turmas.Count == 0)
         {
             AnsiConsole.MarkupLine("\n[yellow]! Nenhuma turma foi aberta até o momento.[/]");
             return;
@@ -81,10 +81,10 @@ public static class AlunoService
             new SelectionPrompt<Turma>()
                 .Title("Selecione a turma do [blue]aluno[/]:")
                 .AddChoices(TurmaService.Turmas)
-                .UseConverter(t => $"Turma: {t.GetNomeTurma()}")
+                .UseConverter(t => $"Turma: {t.NomeTurma}")
         );
 
-        var novoAluno = new Aluno(nome, idade, cpf, turmaSelecionada.GetNomeTurma().ToString());
+        var novoAluno = new Aluno(nome, idade, cpf, turmaSelecionada.NomeTurma.ToString());
 
         alunos.Add(novoAluno);
 
@@ -110,22 +110,22 @@ public static class AlunoService
             new SelectionPrompt<Aluno>()
                 .Title("Selecione o [blue]aluno[/] para ver detalhes:")
                 .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+                .UseConverter(a => $"{a.Nome} (Turma: {a.Turma})")
         );
 
-        string cpf = alunoSelecionado.GetCPF();
+        string cpf = alunoSelecionado.CPF;
         string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
 
         var card = new Panel(new Markup(
             $"[bold]CPF:[/] {cpfFormatado}\n" +
-            $"[bold]Idade:[/] {alunoSelecionado.GetIdade()} anos\n" +
+            $"[bold]Idade:[/] {alunoSelecionado.Idade} anos\n" +
             $"[bold]Média Acadêmica:[/] [yellow]{alunoSelecionado.CalcularMedia():F2}[/]\n" +
             $"[bold]Notas:[/] {(alunoSelecionado.Notas.Count > 0
                 ? string.Join(" | ", alunoSelecionado.Notas.Select(n => n.ToString("F2")))
                 : "[red]N/D[/]")}"
         ));
 
-        card.Header($"Ficha Cadastral: [bold]{alunoSelecionado.GetNome()}[/]");
+        card.Header($"Ficha Cadastral: [bold]{alunoSelecionado.Nome}[/]");
         card.BorderColor(Color.Blue);
 
         AnsiConsole.Write(card);
@@ -153,8 +153,8 @@ public static class AlunoService
 
             tabela.AddRow(
                 (i + 1).ToString(),
-                alunos[i].GetNome() ?? "[red]N/A[/]",
-                alunos[i].GetTurma() ?? "[red]N/A[/]",
+                alunos[i].Nome ?? "[red]N/A[/]",
+                alunos[i].Turma ?? "[red]N/A[/]",
                 $"{CorNota}{alunos[i].CalcularMedia():F2}[/]"
             );
         }
@@ -162,10 +162,9 @@ public static class AlunoService
         AnsiConsole.Write(tabela);
     }
 
-    //===================== ADICIONAR NOTA ==========================================
+    //===================== ATUALIZAR NOTA ==========================================
     static void AtualizarNota()
     {
-        Console.Clear();
 
         if (alunos.Count == 0)
         {
@@ -175,6 +174,8 @@ public static class AlunoService
 
         while (alunos.Count > 0)
         {
+
+            Console.Clear();
 
             var opcao = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -193,19 +194,21 @@ public static class AlunoService
                 case '1': AdicionarNota(); break;
                 case '2': RemoverNota(); break;
             }
+
+            Console.ReadKey();
         }
     }
 
+    //===================== ADICIONAR NOTA ==========================================
     static void AdicionarNota()
     {
-
         ListarAlunos();
 
         var alunoSelecionado = AnsiConsole.Prompt(
             new SelectionPrompt<Aluno>()
                 .Title("Selecione o [blue]aluno[/] que receberar a nota:")
                 .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
+                .UseConverter(a => $"{a.Nome} (Turma: {a.Turma})")
         );
 
         double nota = AnsiConsole
@@ -227,30 +230,38 @@ public static class AlunoService
         AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
     }
 
+    //===================== REMOVER NOTA ==========================================
     static void RemoverNota()
     {
         ListarAlunos();
 
-        //var alunoSelecionado = AnsiConsole.Prompt(
-        //    new SelectionPrompt<Aluno>()
-        //        .Title("Selecione o [blue]aluno[/] que deseja remover a nota:")
-        //        .AddChoices(alunos)
-        //        .UseConverter(a => $"{a.GetNome()} (Turma: {a.GetTurma()})")
-        //);
+        var alunoSelecionado = AnsiConsole.Prompt(
+            new SelectionPrompt<Aluno>()
+                .Title("Selecione o [blue]aluno[/] que deseja remover a nota:")
+                .AddChoices(alunos)
+                .UseConverter(a => $"{a.Nome} (Turma: {a.Turma})")
+        );
 
-        //var NotaSelecionada = AnsiConsole.Prompt(
-        //    new SelectionPrompt<alunoSelecionado>()
-        //        .Title("Selecione a [blue]nota[/] que sera removida:")
-        //        .AddChoices(alunoSelecionado.Notas)
-        //);
+        if (alunoSelecionado.Notas.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]Este aluno não possui notas cadastradas.[/]");
+            return;
+        }
 
-        //alunoSelecionado.Notas.Remove(NotaSelecionada);
+        var notaSelecionada = AnsiConsole.Prompt(
+            new SelectionPrompt<double>()
+                .Title("Selecione a [blue]nota[/] que será removida:")
+                .AddChoices(alunoSelecionado.Notas)
+                .UseConverter(n => n.ToString("F2"))
+        );
 
-        //SalvarAlunos();
+        alunoSelecionado.RemoverNota(notaSelecionada);
 
-        //AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} removida com sucesso ![/]");
+        AlunosRepository.SalvarAlunos();
+
+        AnsiConsole.MarkupLine($"\n[green]Nota removida com sucesso do aluno [bold]{alunoSelecionado.Nome}[/]![/]");
     }
-    
+
     //===================== REMOVER ==========================================
     static void RemoverAluno()
     {
@@ -264,10 +275,10 @@ public static class AlunoService
             new SelectionPrompt<Aluno>()
                 .Title("Selecione o [blue]aluno[/] que sera removido:")
                 .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} | CPF: {a.GetCPF()} | Turma: {a.GetTurma()}")
+                .UseConverter(a => $"{a.GetNome()} | CPF: {a.CPF} | Turma: {a.Turma}")
         );
 
-        var turmaDoAluno = TurmaService.turmas.FirstOrDefault(t => t.GetNomeTurma().ToString() == alunoSelecionado.GetTurma());
+        var turmaDoAluno = TurmaService.Turmas.FirstOrDefault(t => t.NomeTurma.ToString() == alunoSelecionado.Turma);
 
         if (turmaDoAluno != null)
         {
@@ -289,8 +300,8 @@ public static class AlunoService
         alunos.Remove(alunoSelecionado);
 
         AlunosRepository.SalvarAlunos();
-        TurmaService.SalvarTurmas();
+        TurmasRepository.SalvarTurmas();
 
-        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.GetNome()}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.Nome}[/] removido com sucesso![/]");
     }
 }

@@ -5,43 +5,15 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 using System.Text.Json;
 
-
 public static class ProfessorService
 {
 
-	//===================== ARQUIVO DE DADOS =====================
-	static string nomeArquivoProf = "professores.json";
-
 	//===================== LISTA DE DADOS =====================
-	public static List<Professor> professores = CarregarProfessores();
+    private static List<Professor> professores = ProfessoresRepository.CarregarProfessores();
+    public static IReadOnlyList<Professor> Professores => professores;
 
-	//===================== PERSISTÊNCIA PROFESSORES =====================
-	static void SalvarProfessores()
-	{
-		var options = new JsonSerializerOptions { WriteIndented = true };
-		string json = JsonSerializer.Serialize(professores, options);
-		File.WriteAllText(nomeArquivoProf, json);
-	}
-
-	static List<Professor> CarregarProfessores()
-	{
-		if (!File.Exists(nomeArquivoProf))
-			return new List<Professor>();
-
-		string json = File.ReadAllText(nomeArquivoProf);
-
-		try
-		{
-			return JsonSerializer.Deserialize<List<Professor>>(json) ?? new List<Professor>();
-		}
-		catch
-		{
-			return new List<Professor>();
-		}
-	}
-
-	//===================== MENU DE PROFESSORES ======================================================
-	public static void MenuProfessores()
+    //===================== MENU DE PROFESSORES ======================================================
+    public static void MenuProfessores()
     {
         while (true)
         {
@@ -55,8 +27,9 @@ public static class ProfessorService
                     .AddChoices(new[] {
                     "1. Cadastrar Professor",
                     "2. Listar Professores",
-                    "3. Atualizar Salário",
-                    "4. Remover Professor",
+                    "3. Histório Salarial",
+                    "4. Atualizar Salário",
+                    "5. Remover Professor",
                     "0. Voltar"
                     }));
 
@@ -66,8 +39,9 @@ public static class ProfessorService
             {
                 case '1': CadastrarProfessor(); break;
                 case '2': ListarProfessores(); break;
-                case '3': SalarioProfessor(); break;
-                case '4': RemoverProfessor(); break;
+                case '3': HistoricoSalario(); break;
+                case '4': SalarioProfessor(); break;
+                case '5': RemoverProfessor(); break;
             }
 
             AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
@@ -102,10 +76,10 @@ public static class ProfessorService
         );
         var disciplina = AnsiConsole.Ask<string>("Disciplina/Matéria:");
 
-        Professor novoProfessor = new(nome, idade, cpf, disciplina, new List<decimal>(), new List<string>());
+        Professor novoProfessor = new(nome, idade, cpf, disciplina);
         professores.Add(novoProfessor);
 
-        SalvarProfessores();
+        ProfessoresRepository.SalvarProfessores();
 
         AnsiConsole.MarkupLine($"\n [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
     }
@@ -129,7 +103,7 @@ public static class ProfessorService
         for (int i = 0; i < professores.Count; i++)
         {
             var p = professores[i];
-            decimal ultimoSalario = p.GetSalarios().Count > 0 ? p.GetSalarios()[^1] : 0;
+            decimal ultimoSalario = p.Salarios.Count > 0 ? p.Salarios[^1] : 0;
 
             string cpf = p.GetCPF();
             string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
@@ -138,8 +112,8 @@ public static class ProfessorService
                 (i + 1).ToString(),
                 p.GetNome(),
                 cpfFormatado,
-                $"[italic]{p.GetDisciplina()}[/]",
-                $"[green]{ultimoSalario}[/]"
+                $"[italic]{p.Disciplina}[/]",
+                $"[green]{ultimoSalario:C}[/]"
             );
             Console.WriteLine(ultimoSalario);
         }
@@ -156,7 +130,6 @@ public static class ProfessorService
             return;
         }
 
-
         var prof = AnsiConsole.Prompt(
             new SelectionPrompt<Professor>()
                 .Title("Atualizar salário de qual professor?")
@@ -164,35 +137,66 @@ public static class ProfessorService
                 .UseConverter(p => p.GetNome())
         );
 
+        var salarioAtual = prof.Salarios.Count > 0 ? prof.Salarios[^1] : 0;
+
         var grid = new Grid().AddColumns(2);
-
-        var salarioAtual = prof.GetSalarios().Count > 0 ? prof.GetSalarios()[^1] : 0;
-        grid.AddRow( new Panel($"Salário atual: [green]{salarioAtual}[/]"));
+        grid.AddRow(new Panel($"Salário atual: [green]{salarioAtual}[/]"));
         AnsiConsole.Write(grid);
-        
-        
-        var novoSalario = AnsiConsole.Prompt(new TextPrompt<decimal>($"\n Novo salário para [green]{prof.GetNome()}[/] (digite apenas números):")
-            .ValidationErrorMessage("[red]Por favor, insira um salario válido.[/]")
-            .Validate(salario =>
-            {
-                               
-                if (salario < 0)
-                {
-                    return ValidationResult.Error("[Red]Por favor, adicione um salario positivo[/]");
-                }
 
-                return ValidationResult.Success();
-            })
+        var novoSalario = AnsiConsole.Prompt(
+            new TextPrompt<decimal>($"\n Novo salário para [green]{prof.GetNome()}[/]:")
+            .ValidationErrorMessage("[red]Por favor, insira um salário válido.[/]")
+            .Validate(s => s >= 0
+                ? ValidationResult.Success()
+                : ValidationResult.Error("[red]Salário deve ser positivo[/]"))
         );
 
         AnsiConsole.Status()
-            .Start("Atualizando folha de pagamento...", ctx => {
+            .Start("Atualizando folha de pagamento...", ctx =>
+            {
                 Thread.Sleep(800);
-                prof.GetSalarios().Add(novoSalario);
-                SalvarProfessores();
+                prof.AdicionarSalario(novoSalario);
+                ProfessoresRepository.SalvarProfessores();
             });
 
-        AnsiConsole.MarkupLine($"\n [green] Salário atualizado com sucesso![/]");
+        AnsiConsole.MarkupLine("\n[green]Salário atualizado com sucesso![/]");
+    }
+
+    //===================== HISTORICO SALARIAL ==========================================
+    static void HistoricoSalario()
+    {
+        if (professores.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Nenhum professor cadastrado.[/]");
+            return;
+        }
+
+        var prof = AnsiConsole.Prompt(
+            new SelectionPrompt<Professor>()
+            .Title("Escolha um professor:")
+            .AddChoices(professores)
+            .UseConverter(p => p.GetNome())
+        );
+
+        if (prof.Salarios.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Professor ainda não possui salários registrados.[/]");
+            return;
+        }
+
+        var tabela = new Table()
+            .AddColumn("Registro")
+            .AddColumn("Salário");
+
+        for (int i = 0; i < prof.Salarios.Count; i++)
+        {
+            tabela.AddRow(
+                (i + 1).ToString(),
+                $"[green]{prof.Salarios[i]:C}[/]"
+            );
+        }
+
+        AnsiConsole.Write(tabela);
     }
 
     //===================== REMOVER PROFESSORES ==========================================
@@ -208,7 +212,7 @@ public static class ProfessorService
             new SelectionPrompt<Professor>()
                 .Title("Selecione o [blue]professor[/] que sera removido:")
                 .AddChoices(professores)
-                .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.GetDisciplina()}")
+                .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.Disciplina}")
         );
 
         var confirmar = AnsiConsole.Prompt(
@@ -225,7 +229,7 @@ public static class ProfessorService
 
         professores.Remove(profSelecionado);
 
-        SalvarProfessores();
+        ProfessoresRepository.SalvarProfessores();
 
         AnsiConsole.MarkupLine($"\n [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
     }

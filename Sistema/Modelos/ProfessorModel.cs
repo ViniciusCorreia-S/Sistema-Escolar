@@ -1,32 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class Professor : Pessoa
 {
-    public string Disciplina { get; set; } = string.Empty;
-    public List<decimal> Salarios { get; set; } = new List<decimal>();
-    public List<string> Turmas { get; set; } = new List<string>();
+    public string Disciplina { get; private set; } = string.Empty;
+
+    private List<decimal> salarios = new List<decimal>();
+    public IReadOnlyList<decimal> Salarios => salarios;
+
+    private List<string> turmas = new List<string>();
+    public IReadOnlyList<string> Turmas => turmas;
 
     public Professor() { }
 
-    public Professor(string nome, int idade, string cpf, string disciplina,
-        List<decimal> salarios, List<string> turmas) 
+    public Professor(string nome, int idade, string cpf, string disciplina)
         : base(nome, idade, cpf)
     {
         Disciplina = disciplina;
-        Salarios = salarios;
-        Turmas = turmas;
     }
 
-    public string GetDisciplina()
+    public void AdicionarSalario(decimal salario)
     {
-        return Disciplina;
+        salarios.Add(salario);
     }
-    public List<decimal> GetSalarios()
+
+    public void AdicionarTurma(string turma)
     {
-        return Salarios;
-    }
-    public List<string> GetTurmas()
-    {
-        return Turmas;
+        turmas.Add(turma);
     }
 }

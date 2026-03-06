@@ -20,9 +20,9 @@ public static class EstatisticaService
 
 		var table = new Table().Border(TableBorder.Rounded).Expand();
 		table.AddColumn("Tipo").AddColumn("Total");
-		table.AddRow("Turmas", $"[blue]{TurmaService.turmas.Count}[/]");
+		table.AddRow("Turmas", $"[blue]{TurmaService.Turmas.Count}[/]");
 		table.AddRow("Alunos", $"[blue]{AlunoService.Alunos.Count}[/]");
-		table.AddRow("Professores", $"[green]{ProfessorService.professores.Count}[/]");
+		table.AddRow("Professores", $"[green]{ProfessorService.Professores.Count}[/]");
 
 		if (AlunoService.Alunos.Count > 0)
 		{
