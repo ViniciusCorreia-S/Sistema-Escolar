@@ -64,7 +64,7 @@ public static class TurmaService
 
 		TurmasRepository.SalvarTurmas();
 
-		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n [green] ☑ Turma [bold]{nomeTurma}[/] aberta com sucesso![/]");
 	}
 
 	//===================== LISTA TURMAS ==========================================
@@ -134,6 +134,6 @@ public static class TurmaService
 
 		TurmasRepository.SalvarTurmas();
 
-		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.NomeTurma}[/] fechada com sucesso![/]");
+		AnsiConsole.MarkupLine($"\n [green] ☑ Turma [bold]{TurmaSelecionada.NomeTurma}[/] fechada com sucesso![/]");
     }
 }

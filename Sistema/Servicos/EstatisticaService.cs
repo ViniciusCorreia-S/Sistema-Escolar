@@ -34,7 +34,6 @@ public static class EstatisticaService
 			grid.AddRow(table, new Panel("[yellow]Sem dados de média[/]"));
 		}
 
-		//grid.AddRow(new Panel($"[bold]Ultima Atualização:[/] {DateTime.Now:dd/MM/yyyy HH:mm}").Expand());
 		AnsiConsole.Write(grid);
 	}
 }

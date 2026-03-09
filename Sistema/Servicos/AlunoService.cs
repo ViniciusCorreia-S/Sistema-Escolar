@@ -89,7 +89,7 @@ public static class AlunoService
         AlunosRepository.SalvarAlunos();
         TurmasRepository.SalvarTurmas();
 
-        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] ☑ Aluno [bold]{nome}[/] cadastrado com sucesso![/]");
     }
 
     //===================== DETALHES DE ALUNO ==========================================
@@ -233,7 +233,7 @@ public static class AlunoService
 
         AlunosRepository.SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.Nome} adicionada com sucesso ![/]");
+        AnsiConsole.MarkupLine($"\n [green] ☑ Nota de {alunoSelecionado.Nome} adicionada com sucesso ![/]");
     }
 
     //===================== REMOVER NOTA ==========================================
@@ -277,7 +277,7 @@ public static class AlunoService
 
         AlunosRepository.SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n[green]  Nota removida com sucesso do aluno [bold]{alunoSelecionado.Nome}[/]![/]");
+        AnsiConsole.MarkupLine($"\n[green] ☑ Nota removida com sucesso do aluno [bold]{alunoSelecionado.Nome}[/]![/]");
     }
 
     //===================== REMOVER ==========================================
@@ -320,7 +320,7 @@ public static class AlunoService
         AlunosRepository.SalvarAlunos();
         TurmasRepository.SalvarTurmas();
 
-        AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.Nome}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] ☑ Aluno [bold]{alunoSelecionado.Nome}[/] removido com sucesso![/]");
     }
 
 	public static void RemoverAlunosDaTurma(string nomeTurma)

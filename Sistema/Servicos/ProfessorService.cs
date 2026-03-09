@@ -81,7 +81,7 @@ public static class ProfessorService
 
         ProfessoresRepository.SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{nome}[/] cadastrado com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] ☑ Professor [bold]{nome}[/] cadastrado com sucesso![/]");
     }
 
     //===================== LISTA PROFESSORES ==========================================
@@ -181,7 +181,7 @@ public static class ProfessorService
                 ProfessoresRepository.SalvarProfessores();
             });
 
-        AnsiConsole.MarkupLine("\n[green]Salário atualizado com sucesso![/]");
+        AnsiConsole.MarkupLine("\n[green] ☑ Salário atualizado com sucesso![/]");
     }
 
     //===================== HISTORICO SALARIAL ==========================================
@@ -253,6 +253,6 @@ public static class ProfessorService
 
         ProfessoresRepository.SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{profSelecionado.Nome}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] ☑ Professor [bold]{profSelecionado.Nome}[/] removido com sucesso![/]");
     }
 }
