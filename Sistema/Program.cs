@@ -5,10 +5,6 @@ using System.Text.RegularExpressions;
 using Spectre.Console;
 using System.Text.Json;
 
-//MELHORIAS FUTURAS:
-// - opcao de voltar em salario
-// - perguntar a marcelo se deve deixar os dados salvos
-
 class Program
 {
 
@@ -48,13 +44,21 @@ class Program
 
             if (opcao.StartsWith("0")) break;
 
-            switch (opcao[0])
+            try
             {
-                case '1': TurmaService.MenuTurmas(); break;
-                case '2': AlunoService.MenuAlunos(); break;
-                case '3': ProfessorService.MenuProfessores(); break;
-                case '4': EstatisticaService.ExibirEstatisticas(); break;
-                case '0': EncerrarSistema(); continuar = false; break;
+                switch (opcao[0])
+                {
+                    case '1': TurmaService.MenuTurmas(); break;
+                    case '2': AlunoService.MenuAlunos(); break;
+                    case '3': ProfessorService.MenuProfessores(); break;
+                    case '4': EstatisticaService.ExibirEstatisticas(); break;
+                    case '0': EncerrarSistema(); continuar = false; break;
+                }
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.WriteException(ex);
+                Console.ReadKey();
             }
 
             AnsiConsole.MarkupLine("\n[italic grey]Pressione qualquer tecla para retornar ao menu...[/]");

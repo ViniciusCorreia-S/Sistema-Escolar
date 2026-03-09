@@ -45,7 +45,7 @@ public static class ProfessorService
             }
 
             AnsiConsole.MarkupLine("\n[grey]Pressione qualquer tecla para continuar...[/]");
-            Console.ReadKey(true);
+            Console.ReadKey();
         }
     }
 
@@ -106,7 +106,17 @@ public static class ProfessorService
             decimal ultimoSalario = p.Salarios.Count > 0 ? p.Salarios[^1] : 0;
 
             string cpf = p.CPF;
-            string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+            string cpfFormatado;
+            if (!string.IsNullOrWhiteSpace(p.CPF) &&
+                p.CPF.Length == 11 &&
+                ulong.TryParse(p.CPF, out var cpfNum))
+            {
+                cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", cpfNum);
+            }
+            else
+            {
+                cpfFormatado = "[red]N/D[/]";
+            }
 
             tabela.AddRow(
                 (i + 1).ToString(),
@@ -150,6 +160,18 @@ public static class ProfessorService
                 ? ValidationResult.Success()
                 : ValidationResult.Error("[red]Salário deve ser positivo[/]"))
         );
+
+        var confirmar = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Tem certeza que deseja modificar o salário?")
+                .AddChoices(new[] {
+                        "1. Sim",
+                        "0. Não"
+                })
+        );
+
+        if (confirmar.StartsWith("0"))
+            return;
 
         AnsiConsole.Status()
             .Start("Atualizando folha de pagamento...", ctx =>

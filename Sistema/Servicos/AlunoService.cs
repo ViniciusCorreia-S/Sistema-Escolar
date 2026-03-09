@@ -110,7 +110,17 @@ public static class AlunoService
         );
 
         string cpf = alunoSelecionado.CPF;
-        string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
+        string cpfFormatado;
+        if (!string.IsNullOrWhiteSpace(cpf) &&
+            cpf.Length == 11 &&
+            ulong.TryParse(cpf, out var cpfNum))
+        {
+            cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", cpfNum);
+        }
+        else
+        {
+            cpfFormatado = "[red]N/D[/]";
+        }
 
         var card = new Panel(new Markup(
             $"[bold]CPF:[/] {cpfFormatado}\n" +
