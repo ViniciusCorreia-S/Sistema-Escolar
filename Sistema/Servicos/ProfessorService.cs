@@ -105,12 +105,12 @@ public static class ProfessorService
             var p = professores[i];
             decimal ultimoSalario = p.Salarios.Count > 0 ? p.Salarios[^1] : 0;
 
-            string cpf = p.GetCPF();
+            string cpf = p.CPF;
             string cpfFormatado = string.Format(@"{0:000\.000\.000\-00}", Convert.ToUInt64(cpf));
 
             tabela.AddRow(
                 (i + 1).ToString(),
-                p.GetNome(),
+                p.Nome,
                 cpfFormatado,
                 $"[italic]{p.Disciplina}[/]",
                 $"[green]{ultimoSalario:C}[/]"
@@ -134,7 +134,7 @@ public static class ProfessorService
             new SelectionPrompt<Professor>()
                 .Title("Atualizar salário de qual professor?")
                 .AddChoices(professores)
-                .UseConverter(p => p.GetNome())
+                .UseConverter(p => $"{p.Nome} (CPF: {p.CPF})")
         );
 
         var salarioAtual = prof.Salarios.Count > 0 ? prof.Salarios[^1] : 0;
@@ -144,7 +144,7 @@ public static class ProfessorService
         AnsiConsole.Write(grid);
 
         var novoSalario = AnsiConsole.Prompt(
-            new TextPrompt<decimal>($"\n Novo salário para [green]{prof.GetNome()}[/]:")
+            new TextPrompt<decimal>($"\n Novo salário para [green]{prof.Nome}[/]:")
             .ValidationErrorMessage("[red]Por favor, insira um salário válido.[/]")
             .Validate(s => s >= 0
                 ? ValidationResult.Success()
@@ -165,17 +165,17 @@ public static class ProfessorService
     //===================== HISTORICO SALARIAL ==========================================
     static void HistoricoSalario()
     {
-        if (professores.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[yellow]Nenhum professor cadastrado.[/]");
-            return;
-        }
+		if (professores.Count == 0)
+		{
+			AnsiConsole.MarkupLine("\n[yellow]! Nenhum professor cadastrado.[/]");
+			return;
+		}
 
-        var prof = AnsiConsole.Prompt(
+		var prof = AnsiConsole.Prompt(
             new SelectionPrompt<Professor>()
             .Title("Escolha um professor:")
             .AddChoices(professores)
-            .UseConverter(p => p.GetNome())
+            .UseConverter(p => p.Nome)
         );
 
         if (prof.Salarios.Count == 0)
@@ -212,7 +212,7 @@ public static class ProfessorService
             new SelectionPrompt<Professor>()
                 .Title("Selecione o [blue]professor[/] que sera removido:")
                 .AddChoices(professores)
-                .UseConverter(p => $"{p.GetNome()} | CPF: {p.GetCPF()} | Disciplina: {p.Disciplina}")
+                .UseConverter(p => $"{p.Nome} | CPF: {p.CPF} | Disciplina: {p.Disciplina}")
         );
 
         var confirmar = AnsiConsole.Prompt(
@@ -231,6 +231,6 @@ public static class ProfessorService
 
         ProfessoresRepository.SalvarProfessores();
 
-        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{profSelecionado.GetNome()}[/] removido com sucesso![/]");
+        AnsiConsole.MarkupLine($"\n [green] Professor [bold]{profSelecionado.Nome}[/] removido com sucesso![/]");
     }
 }

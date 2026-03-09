@@ -7,8 +7,7 @@ using System.Text.Json;
 
 //MELHORIAS FUTURAS:
 // - opcao de voltar em salario
-// - opção de remover nota
-// - adicionar sistema de boletim
+// - perguntar a marcelo se deve deixar os dados salvos
 
 class Program
 {

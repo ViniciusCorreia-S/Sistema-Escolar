@@ -2,29 +2,31 @@
 
 public abstract class Pessoa
 {
-    public string Nome { get; set; } = string.Empty;
-    public int Idade { get; set; }
-    public string CPF { get; set; } = string.Empty;
+	public string Nome { get; private set; } = string.Empty;
+	public int Idade { get; private set; }
+	public string CPF { get; private set; } = string.Empty;
 
-    public Pessoa() { }
+	public Pessoa() { }
 
-    public Pessoa(string nome, int idade, string cpf)
-    {
-        Nome = nome;
-        Idade = idade;
-        CPF = cpf;
-    }
+	public Pessoa(string nome, int idade, string cpf)
+	{
+		Nome = nome;
+		Idade = idade;
+		CPF = cpf;
+	}
 
-    public string GetNome()
-    {
-        return Nome;
-    }
-    public int GetIdade()
-    {
-        return Idade;
-    }
-    public string GetCPF()
-    {
-        return CPF;
-    }
+	public void AlterarNome(string nome)
+	{
+		Nome = nome;
+	}
+
+	public void AlterarIdade(int idade)
+	{
+		Idade = idade;
+	}
+
+	public void AlterarCPF(string cpf)
+	{
+		CPF = cpf;
+	}
 }

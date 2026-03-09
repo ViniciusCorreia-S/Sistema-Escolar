@@ -88,7 +88,7 @@ public static class TurmaService
 			var alunosDaTurma = turma.Alunos;
 
 			string listaAlunos = alunosDaTurma.Count > 0
-				? string.Join(", ", alunosDaTurma.Select(a => a.GetNome()))
+				? string.Join(", ", alunosDaTurma.Select(a => a.Nome))
 				: "[grey]Nenhum aluno[/]";
 
 			table.AddRow(
@@ -128,7 +128,10 @@ public static class TurmaService
         if (confirmar.StartsWith("0"))
             return;
 
-        turmas.Remove(TurmaSelecionada);
+		AlunoService.RemoverAlunosDaTurma(TurmaSelecionada.NomeTurma);
+
+		turmas.Remove(TurmaSelecionada);
+
 		TurmasRepository.SalvarTurmas();
 
 		AnsiConsole.MarkupLine($"\n [green] Turma [bold]{TurmaSelecionada.NomeTurma}[/] fechada com sucesso![/]");

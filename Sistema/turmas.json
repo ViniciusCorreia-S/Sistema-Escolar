@@ -1,0 +1,18 @@
+[
+  {
+    "NomeTurma": "A3454",
+    "Alunos": [
+      {
+        "Turma": "A3454",
+        "Notas": [],
+        "Nome": "Aluno01",
+        "Idade": 11,
+        "CPF": "11111111111"
+      }
+    ]
+  },
+  {
+    "NomeTurma": "B4554",
+    "Alunos": []
+  }
+]

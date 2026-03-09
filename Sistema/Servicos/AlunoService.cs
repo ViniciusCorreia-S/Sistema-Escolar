@@ -67,10 +67,6 @@ public static class AlunoService
                 if (cpf.Length != 11 || !Regex.IsMatch(cpf, @"^\d{11}$"))
                     return ValidationResult.Error("[red]CPF deve conter exatamente 11 números[/]");
 
-                //if (alunos.Any(a => a.CPF == cpf))
-                //    AnsiConsole.MarkupLine("[red]CPF já cadastrado![/]");
-                //    return;
-
                 return ValidationResult.Success();
             })
         );
@@ -227,7 +223,7 @@ public static class AlunoService
 
         AlunosRepository.SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.GetNome()} adicionada com sucesso ![/]");
+        AnsiConsole.MarkupLine($"\n [green] Nota de {alunoSelecionado.Nome} adicionada com sucesso ![/]");
     }
 
     //===================== REMOVER NOTA ==========================================
@@ -255,11 +251,23 @@ public static class AlunoService
                 .UseConverter(n => n.ToString("F2"))
         );
 
-        alunoSelecionado.RemoverNota(notaSelecionada);
+		var confirmar = AnsiConsole.Prompt(
+			new SelectionPrompt<string>()
+				.Title("Tem certeza que deseja remover esta nota?")
+				.AddChoices(new[] {
+							"1. Sim",
+							"0. Não"
+				})
+		);
+
+		if (confirmar.StartsWith("0"))
+			return;
+
+		alunoSelecionado.RemoverNota(notaSelecionada);
 
         AlunosRepository.SalvarAlunos();
 
-        AnsiConsole.MarkupLine($"\n[green]Nota removida com sucesso do aluno [bold]{alunoSelecionado.Nome}[/]![/]");
+        AnsiConsole.MarkupLine($"\n[green]  Nota removida com sucesso do aluno [bold]{alunoSelecionado.Nome}[/]![/]");
     }
 
     //===================== REMOVER ==========================================
@@ -275,7 +283,7 @@ public static class AlunoService
             new SelectionPrompt<Aluno>()
                 .Title("Selecione o [blue]aluno[/] que sera removido:")
                 .AddChoices(alunos)
-                .UseConverter(a => $"{a.GetNome()} | CPF: {a.CPF} | Turma: {a.Turma}")
+                .UseConverter(a => $"{a.Nome} | CPF: {a.CPF} | Turma: {a.Turma}")
         );
 
         var turmaDoAluno = TurmaService.Turmas.FirstOrDefault(t => t.NomeTurma.ToString() == alunoSelecionado.Turma);
@@ -304,4 +312,18 @@ public static class AlunoService
 
         AnsiConsole.MarkupLine($"\n [green] Aluno [bold]{alunoSelecionado.Nome}[/] removido com sucesso![/]");
     }
+
+	public static void RemoverAlunosDaTurma(string nomeTurma)
+	{
+		var alunosDaTurma = alunos
+			.Where(a => a.Turma == nomeTurma)
+			.ToList();
+
+		foreach (var aluno in alunosDaTurma)
+		{
+			alunos.Remove(aluno);
+		}
+
+		AlunosRepository.SalvarAlunos();
+	}
 }
